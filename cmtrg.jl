@@ -8,9 +8,20 @@ include("tensorUtilities.jl")
 include("dmrg.jl")
 include("dmrgFast.jl")
 
-width = 10
-len = 100
-N = width*len
+X = 20
+D = 2
+d = 2
+
+A = rand(D, D, D, D, d)
+B = rand(D, D, D, D, d)
+
+C = [rand(X, X) for i=1:4]
+Ta = [rand(X, X, D, D) for i=1:4]
+Tb = [rand(X, X, D, D) for i=1:4]
+
+Ct = [zeros(X, D, D, X) for i=1:4]
+Tat = [zeros(X, D, X, D, D, D) for i=1:4]
+Tbt = [zeros(X, D, X, D, D, D) for i=1:4]
 
 
 
@@ -19,35 +30,17 @@ sz = Float64[0.5 0; 0 -0.5]
 sp = Float64[0 1; 0 0]
 sm = sp'
 Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
-hl = [sz, 0.5*sp, 0.5*sm]
-hr = [sz, sm, sp]
-lrDim = 3
 # order for Htwosite is s1, s2, s1p, s2p
-
-#  Make initial product state in up down up down up down pattern (Neel state)
-# Make first tensor a 1 x 2 x m tensor; and last is m x 2 x 1  (rather than vectors)
-A = [zeros(1,2,1) for i=1:N]
-for i=1:N
-    A[i][1,iseven(i) ? 2 : 1,1] = 1.0
-end
-
-HLR = [zeros(1,1) for i=1:N]	# Initialize to avoid errors on firs sweep
-Aopen = [zeros(1,2,1,2) for i=1:N,  j=1:2*width]
-
-
-params = zeros(3) #this will hold alpha, beta, and numPairs for the current iteration
-maxPairs = (2 * width + 6) * lrDim
-leftMats = [zeros(1,1) for i=1:maxPairs]
-rightMats = [zeros(1,1) for i=1:maxPairs]
 
 function mainLoop()
   m = 3
-  numSweeps = 10
-  energies = zeros(numSweeps)
-  for swp = 1:numSweeps
-    m = round(Int64,1.5*m)
-      println("\n sweep = $swp")
-    #energies[swp] = sweepFast(m)/N
+  numIter = 10
+  energies = zeros(numIter)
+  for iter = 1:numIter
+      iter%100 == 0 && (tau = 0.2*100/iter)
+      taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
+      println("\n iteration = $iter")
+      #energies[swp] = sweepFast(m)/N
   end
   energies
 end
