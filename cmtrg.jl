@@ -3,25 +3,28 @@
 using TensorOperations
 using LinearMaps
 
-include("gridUtilities.jl")
-include("tensorUtilities.jl")
-include("dmrg.jl")
-include("dmrgFast.jl")
+include("tensorOpt.jl")
 
 X = 20
 D = 2
 d = 2
+XD2 = X*D*D
+X2D2 = X*X*D*D
 
 A = rand(D, D, D, D, d)
 B = rand(D, D, D, D, d)
 
 C = [rand(X, X) for i=1:4]
-Ta = [rand(X, X, D, D) for i=1:4]
-Tb = [rand(X, X, D, D) for i=1:4]
+Ta = [rand(X, D, D, X) for i=1:4]
+Tb = [rand(X, D, D, X) for i=1:4]
 
 Ct = [zeros(X, D, D, X) for i=1:4]
-Tat = [zeros(X, D, X, D, D, D) for i=1:4]
-Tbt = [zeros(X, D, X, D, D, D) for i=1:4]
+Tat = [zeros(X, D, D, D, D, X) for i=1:4]
+Tbt = [zeros(X, D, D, D, D, X) for i=1:4]
+
+E = [zeros(X, D, D, X) for i=1:6]
+E[5] = zeros(X, D, D, XD2)
+E[6] = zeros(XD2, D, D, X)
 
 
 
