@@ -8,15 +8,25 @@ function setEnvRight()
 
 end
 
-function plugInRight(B)
+function makeR(B, right)
 
-  Temp = reshape(E3,XD2,X)*reshape(E4,X,XD2)
-  Temp = reshape(Temp, X, D, D, D, D, X)
-  @tensor begin
-    Temp2[x, c, cp, b, bp, y] := Temp[x, d, dp, a, ap, y] * B[a, b, c, d, s] * B[ap, bp, cp, dp, s]
-  end
-  Temp = reshape(reshape(Temp2, XD2, XD2) * reshape(E[5],XD2,X), X, D, D, D, D, X)
-  makeD4Matrix(E[2], Temp, E[6], E[1])
+  if right
+    Temp = reshape(E[3],XD2,X)*reshape(E[4],X,XD2)
+    Temp = reshape(Temp, X, D, D, D, D, X)
+    @tensor begin
+      Temp2[x, c, cp, b, bp, y] := Temp[x, d, dp, a, ap, y] * B[a, b, c, d, s] * B[ap, bp, cp, dp, s]
+    end
+    Temp = reshape(reshape(Temp2, XD2, XD2) * reshape(E[5],XD2,X), X, D, D, D, D, X)
+    R = makeD4Matrix(E[2], Temp, E[6], E[1])
+  else
+    Temp = reshape(E[6],X*D^3,X)*reshape(E[1],X,XD2)
+    Temp = reshape(Temp, XD2, D, D, D, D, X)
+    @tensor begin
+      Temp2[x, a, ap, b, bp, y] := Temp[x, c, cp, d, dp, y] * B[a, b, c, d, s] * B[ap, bp, cp, dp, s]
+    end
+    Temp = reshape(reshape(Temp2, X*D^4, XD2) * reshape(E[2],XD2,X), XD2, D, D, D, D, X)
+    R = makeD4Matrix(E[3], E[4], E[5], Temp2)
+  end 
 
 end
 
