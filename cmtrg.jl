@@ -27,6 +27,10 @@ E[5] = zeros(X, D, D, XD2)
 E[6] = zeros(XD2, D, D, X)
 
 
+RIGHT = 1
+LEFT = 2
+UP = 3
+DOWN = 4
 
 #Global variables
 sz = Float64[0.5 0; 0 -0.5]
@@ -44,6 +48,15 @@ function mainLoop()
       taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
       println("\n iteration = $iter")
       #energies[swp] = sweepFast(m)/N
+
+      applyGateAndUpdate(taugate, RIGHT)
+      updateEnvironment()
+      applyGateAndUpdate(taugate, LEFT)
+      updateEnvironment()
+      applyGateAndUpdate(taugate, UP)
+      updateEnvironment()
+      applyGateAndUpdate(taugate, DOWN)
+      updateEnvironment()
   end
   energies
 end
