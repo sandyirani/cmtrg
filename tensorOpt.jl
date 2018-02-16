@@ -43,12 +43,41 @@ function makeR(B, right)
 
 end
 
-function makeS(B, ABp, right)
+function makePsiAB(B, ABp, right)
   Temp = reshape(reshape(E[5],XD2, XD2)*reshape(E[6],XD2,XD2), X, D, D, D, D, X)
   @tensor begin
-    Temp2 := Temp[x, d, dp, e, ep, y]*ABp[ap, bp, cp, dp, ep, fp]
+    Temp2[x, d, e, ap, bp, cp, fp, y, s1p, s2p] := Temp[x, d, dp, e, ep, y]*ABp[ap, bp, cp, dp, ep, fp, s1p, s2p]
   end
+  E1 = E[1]
+  @tensor begin
+    Temp3[x, d, e, ap, bp, cp, f, z, s1p, s2p] := Temp2[x, d, e, ap, bp, cp, fp, y, s1p, s2p] * E1[y, f, fp, z]
+  end
+  E2 = E[2]
+  @tensor begin
+    Temp4[x, d, e, a, bp, cp, f, z, s1p, s2p] := Temp3[x, d, e, ap, bp, cp, f, y, s1p, s2p] * E2[y, a, ap, z]
+  end
+  E3 = E[3]
+  @tensor begin
+    Temp5[x, d, e, a, b, cp, f, z, s1p, s2p] := Temp4[x, d, e, a, bp, cp, f, y, s1p, s2p] * E3[y, b, bp, z]
+  end
+  E4 = E[4]
+  @tensor begin
+    Temp6[a, b, c, d, e, f, s1p, s2p] := Temp5[x, d, e, a, b, cp, f, y, s1p, s2p] * E3[y, c, cp, x]
+  end
+  Return(Temp6)
+end
 
+function getS(B, PsiAB, right)
+  if right
+      @tensor begin
+          S[a, g, e, f, sp1] := PsiAB[a, b, c, d, e, f, s1p, s2p] * B[b, c, d, g, sp2]
+      end
+  else
+      @tensor begin
+          S[a, g, e, f, sp1] := PsiAB[a, b, c, d, e, f, s1p, s2p] * B[a, g, e, f, sp1]
+      end
+  end
+  Return(reshape(A,D^4*d))
 end
 
 function makeD4Matrix(J, K, L, M)
