@@ -1,3 +1,9 @@
+function JK(a,b)	# Julia kron,  ordered for julia arrays; returns matrix
+    (a1,a2) = size(a)
+    (b1,b2) = size(b)
+    reshape(Float64[a[i,ip] * b[j,jp] for i=1:a1, j=1:b1, ip=1:a2, jp=1:b2],a1*b1,a2*b2)
+end
+
 function setEnvRight()
 
   E[1] = Tb[4]
@@ -14,19 +20,34 @@ function makeR(B, right)
     Temp = reshape(E[3],XD2,X)*reshape(E[4],X,XD2)
     Temp = reshape(Temp, X, D, D, D, D, X)
     @tensor begin
-      Temp2[x, c, cp, b, bp, y] := Temp[x, d, dp, a, ap, y] * B[a, b, c, d, s] * B[ap, bp, cp, dp, s]
+      Temp2[x, c, cp, d, dp, y] := Temp[x, a, ap, b, bp, y] * B[a, b, c, d, s] * B[ap, bp, cp, dp, s]
     end
-    Temp = reshape(reshape(Temp2, XD2, XD2) * reshape(E[5],XD2,X), X, D, D, D, D, X)
-    R = makeD4Matrix(E[2], Temp, E[6], E[1])
+    E5 = E[5]
+    @tensor begin
+      Temp3[x, d, dp, z] := Temp2[x, c, cp, d, dp, y] * E5[y, c, cp, z]
+    end
+    R = makeD4Matrix(E[2], Temp3, E[6], E[1])
   else
-    Temp = reshape(E[6],X*D^3,X)*reshape(E[1],X,XD2)
+    Temp = reshape(E[6],X*D^4,X)*reshape(E[1],X,XD2)
     Temp = reshape(Temp, XD2, D, D, D, D, X)
     @tensor begin
       Temp2[x, a, ap, b, bp, y] := Temp[x, c, cp, d, dp, y] * B[a, b, c, d, s] * B[ap, bp, cp, dp, s]
     end
-    Temp = reshape(reshape(Temp2, X*D^4, XD2) * reshape(E[2],XD2,X), XD2, D, D, D, D, X)
-    R = makeD4Matrix(E[3], E[4], E[5], Temp2)
-  end 
+    E2 = E[2]
+    @tensor begin
+      Temp3[x, b, bp, z] := Temp2[x, a, ap, b, bp, y] * E2[y, a, ap, z]
+    end
+    R = makeD4Matrix(Temp3, E[3], E[4], E[5])
+  end
+  return(JK(R,eye(2))
+
+end
+
+function makeS(B, ABp, right)
+  Temp = reshape(reshape(E[5],XD2, XD2)*reshape(E[6],XD2,XD2), X, D, D, D, D, X)
+  @tensor begin
+    Temp2 := Temp[x, d, dp, e, ep, y]*ABp[ap, bp, cp, dp, ep, fp]
+  end
 
 end
 
