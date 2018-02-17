@@ -20,8 +20,21 @@ end
 function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
 
   Cld1 = reshape(reshape(TAd,XD2,X)*Cld,X,XD2)
-  TAl1 =
-  TBl1 = reshape(Bdub,D^6,D^2)*TAl1
+  TAl = reshape(TAl,X,D^2,X)
+  @tensor begin
+    TBl1[x,c,b,y,a] := TAl[x,d,y]*Bdub[a,b,c,d]
+  end
+  TBl1 = reshape(TBl1,XD2,D^2,XD2)
+  TBl = reshape(TBl,X,D^2,X)
+  @tensor begin
+    TAl1[x,c,b,y,a] := TBl[x,d,y]*Adub[a,b,c,d]
+  end
+  TAl1 = reshape(TAl1,XD2,D^2,XD2)
+  Clu1 = reshape(Clu*reshape(TBu,X,XD2),XD2,X)
+
+  MZ = Clu1*Clu1' + conj.(Cld1'*Cld1)
+  evn = eigs(bigH;nev=X,ritzvec=true)
+  Z = evn[2][:,1:X]
 
   Return(newCld, newTAl, newTBl, Clu)
 
