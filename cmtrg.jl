@@ -4,6 +4,7 @@ using TensorOperations
 using LinearMaps
 
 include("tensorOpt.jl")
+include("updateEnvironment.jl")
 
 X = 20
 D = 2
