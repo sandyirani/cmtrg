@@ -33,9 +33,32 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   Clu1 = reshape(Clu*reshape(TBu,X,XD2),XD2,X)
 
   MZ = Clu1*Clu1' + conj.(Cld1'*Cld1)
-  evn = eigs(bigH;nev=X,ritzvec=true)
+  evn = eigs(MZ;nev=X,ritzvec=true)
   Z = evn[2][:,1:X]
 
-  Return(newCld, newTAl, newTBl, Clu)
+  MQ1 = reshape(reshape(TBl,XD2,X)*Clu*reshape(TBu,X,XD2),X,D^2,D^2,X)
+  @tensor begin
+    Q1[x,b,c,y] := MQ[x,d,a,y]*Adub[a,b,c,d]
+  end
+  Q1 = reshape(Q1,XD2,XD2)
+
+  MQ4 = reshape(reshape(TAd,XD2,X)*Cld*reshape(TAl,X,XD2),X,D^2,D^2,X)
+  @tensor begin
+    Q4[x,b,a,y] := MQ[x,c,d,y]*Bdub[a,b,c,d]
+  end
+  Q4 = reshape(Q1,XD2,XD2)
+
+  MW = conj.(Q1'*Q1) + Q4+Q4'
+  evn = eigs(MW;nev=X,ritzvec=true)
+  W = evn[2][:,1:X]
+
+  newClu = Z'*Clu1
+  newCld = Cld1*Z
+  newTAl = reshape(Z'*reshape(TBl1,XD2,X*D^4),XD2,XD2)
+  newTAl = reshape(newTAl1*W,X,D,D,X)
+  newTBl = reshape(W'*reshape(TAl1,XD2,X*D^4),XD2,XD2)
+  newTBl = reshape(newTBl1*Z,X,D,D,X)
+
+  Return(newCld, newTAl, newTBl, newClu)
 
 end
