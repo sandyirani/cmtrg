@@ -47,19 +47,19 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   evn = eigs(MZ;nev=X,ritzvec=true)
   Z = evn[2][:,1:X]
 
-  MQ = reshape(reshape(TBl,XD2,X)*Clu*reshape(TBu,X,XD2),X,D^2,D^2,X)
+  MQu = reshape(reshape(TBl,XD2,X)*Clu*reshape(TBu,X,XD2),X,D^2,D^2,X)
   @tensor begin
-    Q1[x,c,y,b] := MQ[x,d,a,y]*Adub[a,b,c,d]
+    Qu[x,c,y,b] := MQu[x,d,a,y]*Adub[a,b,c,d]
   end
-  Q1 = reshape(Q1,XD2,XD2)
+  Qu = reshape(Q1,XD2,XD2)
 
-  MQ4 = reshape(reshape(TAd,XD2,X)*Cld*reshape(TAl,X,XD2),X,D^2,D^2,X)
+  MQd = reshape(reshape(TAd,XD2,X)*Cld*reshape(TAl,X,XD2),X,D^2,D^2,X)
   @tensor begin
-    Q4[x,b,y,a] := MQ[x,c,d,y]*Bdub[a,b,c,d]
+    Qd[x,b,y,a] := MQd[x,c,d,y]*Bdub[a,b,c,d]
   end
-  Q4 = reshape(Q1,XD2,XD2)
+  Qd = reshape(Q1,XD2,XD2)
 
-  MW = conj.(Q1'*Q1) + Q4+Q4'
+  MW = conj.(Qd'*Qd) + Qu*Qu'
   evn = eigs(MW;nev=X,ritzvec=true)
   W = evn[2][:,1:X]
 

@@ -19,13 +19,13 @@ function applyGateAndUpdate(g, dir)
   while( change > eps )
     R = makeR(B2,true)
     S = makeS(B2,A2p,B2p,true)
-    newA = reshape(getNewAB(R,S),D,D,D,D,d)
-    change = sum(abs.(newA-A2))
+    newA = reshape(getNewAB(R,S),D,D,D,D,pd)
+    change = max(sum(abs.(newA-A2)), change)
     A2 = newA
 
     R = makeR(A2,false)
     S = makeS(A2,A2p,B2p,false)
-    newB = reshape(getNewAB(R,S),D,D,D,D,d)
+    newB = reshape(getNewAB(R,S),D,D,D,D,pd)
     change = max(sum(abs.(newB-B2)), change)
     B2 = newB
   end
@@ -36,16 +36,16 @@ end
 
 function applyGate(A2,B2,g)
   @tensor begin
-    ABg[a,e,f,a1,b,c,d,s2p] := A2[a,x,e,f,s1]*B2[b,c,d,x,s2]*g[s1,s2,s1p,s2p]
+    ABg[a,e,f,s1,b,c,d,s2p] := A2[a,x,e,f,s1]*B2[b,c,d,x,s2]*g[s1,s2,s1p,s2p]
   end
-  ABg = reshape(ABg,D^4*d,D^4*d)
+  ABg = reshape(ABg,D^3*pd,D^3*pd)
   (U,d,V) = svd(ABg)
   U = U * diagm(d)
   newDim = length(d)
-  A2p = reshape(U,D,D,D,d,newDim)
-  B2p = reshape(U,newDim,D,D,D,d)
-  A2p = [A2p[i,m,j,k,l] for i=1:D, j=1:D, k=1:D, l=1:d, m=1:newDim]
-  B2p = [B2p[j,k,l,i,m] for i=1:newDim, j=1:D, k=1:D, l=1:D, m=1:d]
+  A2p = reshape(U,D,D,D,pd,newDim)
+  B2p = reshape(U,newDim,D,D,D,pd)
+  A2p = [A2p[i,j,k,s,l] for i=1:D, l=1:newDim, j=1:D, k=1:D, s=1:pd]
+  B2p = [B2p[i,j,k,l,s] for j=1:D, k=1:D, l=1:D, i=1:newDim, s=1:pd]
   Return(A2p, B2p)
 end
 
@@ -93,14 +93,14 @@ function mergeRight(ABup, ABdown)
 end
 
 function mergeLeft(ABup, ABdown)
-  Temp = reshape(E[6],X*D^4,X)*reshape(E[1],X,XD2) #X3 D6
-  Temp = reshape(Temp, XD2, D, D, D, D, X)
+  Temp = reshape(E[1],XD2,X)*reshape(E[2],X,XD2)* #X3 D6
+  Temp = reshape(Temp, X, D, D, D, D, X)
   @tensor begin
-    Temp2[x, a, ap, b, bp, y] := Temp[x, c, cp, d, dp, y] * ABup[a, b, c, d, s] * ABdown[ap, bp, cp, dp, s] #X2 D8 d
+    Temp2[y, c, cp, b, bp, z] := Temp[y, d, dp, a, ap, z] * ABup[a, b, c, d, s] * ABdown[ap, bp, cp, dp, s] #X2 D8 pd
   end
-  E2 = E[2]
+  E6 = E[6]
   @tensor begin
-    Temp3[x, b, bp, z] := Temp2[x, a, ap, b, bp, y] * E2[y, a, ap, z] #X3 D4
+    Temp3[x, b, bp, z] := E6[x, c, cp, y] * Temp2[y, c, cp, b, bp, z] #X3 D6
   end
   Return(Temp3)
 end
@@ -109,26 +109,32 @@ function makeR(AB, right)
 
   if right
     Temp = mergeRight(AB, AB)
-    R = makeD4Matrix(E[2], Temp, E[6], E[1])
+    R = makeD4Matrix(Temp, E[6], E[1], E[2])
+    R = [R[b,c,d,a,bp,cp,dp,ap] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:pd]
   else
     Temp = mergeLeft(AB, AB)
-    R = makeD4Matrix(Temp3, E[3], E[4], E[5])
+    R = makeD4Matrix(E[5], Temp3, E[3], E[4])
+    R = [R[c,d,a,b,cp,dp,ap,bp] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:pd]
   end
-  return(JK(R,eye(2))
+  return(JK(reshape(R,^4,D^4),eye(2))
 
 end
 
 function makeS(AB, AP, BP, right)
   if right
     Temp = mergeRight(AB, BP)
-    S = makeD4Matrix(E[2], Temp, E[6], E[1])
-    ap = size(AP)
-    S = reshape(S * reshape(AP,ap[1]*ap[2]*ap[3]*ap[4],ap[5]), ap[1]*ap[2]*ap[3]*ap[4]*ap[5]) # D8 g d
+    S = makeD4Matrix(Temp, E[6], E[1], E[2])
+    s = size(S)
+    S = [S[b,c,d,a,bp,cp,dp,ap] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:s[5],cp=1:pd,dp=1:pd]
+    S = reshape(S,D^4,D^3*s[5])
+    S = reshape(S * reshape(AP,D^3*s[5],pd), D^3*s[5]*pd) # D8 g d
   else
     Temp = mergeLeft(AB, AP)
-    S = makeD4Matrix(Temp3, E[3], E[4], E[5])
-    Bp = size(BP)
-    S = reshape(S * reshape(AP,bp[1]*bp[2]*bp[3]*bp[4],bp[5]), bp[1]*bp[2]*bp[3]*bp[4]*bp[5]) # D8 g d
+    S = makeD4Matrix(E[5], Temp3, E[3], E[4])
+    s = size(S)
+    S = [S[c,d,a,b,cp,dp,ap,bp] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:s[6]]
+    S = reshape(S,D^4,D^3*s[6])
+    S = reshape(S * reshape(AP,D^3*s[5],pd), D^3*s[5]*pd) # D8 g d
   end
   Return(S)
 end
@@ -145,16 +151,16 @@ function makeD4Matrix(J, K, L, M)
   @tensor begin
     Temp2[a,b,c,d,ap,bp,cp,dp] := Temp[x,a,ap,b,bp,c,cp,y] * M[y,d,dp,x]
   end
-  return(reshape(Temp2,D^4, D^4))
+  return(Temp2)
 
 end
 
 function makeLowerEs(T1, C1, T2, T3, C2, T4, P1, P2)
 
-  Temp = reshape(T1,XD2,X)*C1*reshape(T2,X,XD2)
+  Temp = reshape(T1,XD2,X)*C1*reshape(T2,X,XD2) # X3 D4
   Temp = reshape(Temp, X, D, D, D, D, X)
   @tensor begin
-    E5[x, a, ap, d, dp, y] := Temp[x, a, ap, b, bp, y] * P2[a, b, c, d, s] * P2[ap, bp, cp, dp, s] #X2 D8 d
+    E5[x, a, ap, y, d, dp] := Temp[x, b, bp, c, cp, y] * P2[a, b, c, d, s] * P2'[ap, bp, cp, dp, s] #X2 D8 d
   end
   E[5] = reshape(E5, X, D, D, XD2)
   Temp = reshape(T3,XD2,X)*C2*reshape(T4,X,XD2) # X3 D4
