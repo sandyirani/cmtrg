@@ -8,20 +8,16 @@ include("updateEnvironment.jl")
 
 X = 20
 D = 2
-d = 2
+pd = 2
 XD2 = X*D*D
 X2D2 = X*X*D*D
 
-A = rand(D, D, D, D, d)
-B = rand(D, D, D, D, d)
+A = rand(D, D, D, D, pd) #pd is the particle dimension
+B = rand(D, D, D, D, pd)
 
 C = [rand(X, X) for i=1:4]
 Ta = [rand(X, D, D, X) for i=1:4]
 Tb = [rand(X, D, D, X) for i=1:4]
-
-Ct = [zeros(X, D, D, X) for i=1:4]
-Tat = [zeros(X, D, D, D, D, X) for i=1:4]
-Tbt = [zeros(X, D, D, D, D, X) for i=1:4]
 
 E = [zeros(X, D, D, X) for i=1:6]
 E[5] = zeros(X, D, D, XD2)
@@ -41,7 +37,6 @@ Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
 # order for Htwosite is s1, s2, s1p, s2p
 
 function mainLoop()
-  m = 3
   numIter = 10
   energies = zeros(numIter)
   for iter = 1:numIter

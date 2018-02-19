@@ -172,14 +172,14 @@ function rotateTensors(Ap,Bp,dir)
     A2 = copy(Ap)
     B2 = copy(Bp)
   elseif (dir == LEFT)
-    A2 = [Ap[c,d,a,b,s] for a = 1:D for b = 1:D for c = 1:D for d = 1:D for s = 1:d]
-    B2 = [Bp[c,d,a,b,s] for a = 1:D for b = 1:D for c = 1:D for d = 1:D for s = 1:d]
+    A2 = [Ap[a,b,c,d,s] for c = 1:D, d = 1:D, a = 1:D, b = 1:D, s = 1:pd]
+    B2 = [Bp[a,b,c,d,s] for c = 1:D, d = 1:D, a = 1:D, b = 1:D, s = 1:pd]
   elseif (dir == UP)
-    A2 = [Bp[b,c,d,a,s] for a = 1:D for b = 1:D for c = 1:D for d = 1:D for s = 1:d]
-    B2 = [Ap[b,c,d,a,s] for a = 1:D for b = 1:D for c = 1:D for d = 1:D for s = 1:d]
+    A2 = [Bp[a,b,c,d,s] for b = 1:D, c = 1:D, d = 1:D, a = 1:D, s = 1:pd]
+    B2 = [Ap[a,b,c,d,s] for b = 1:D, c = 1:D, d = 1:D, a = 1:D, s = 1:pd]
   elseif (dir == DOWN)
-    A2 = [Bp[d,a,b,c,s] for a = 1:D for b = 1:D for c = 1:D for d = 1:D for s = 1:d]
-    B2 = [Ap[d,a,b,c,s] for a = 1:D for b = 1:D for c = 1:D for d = 1:D for s = 1:d]
+    A2 = [Bp[a,b,c,d,s] for d = 1:D, a = 1:D, b = 1:D, c = 1:D, s = 1:pd]
+    B2 = [Ap[a,b,c,d,s] for d = 1:D, a = 1:D, b = 1:D, c = 1:D, s = 1:pd]
   end
   Return(A2,B2)
 
