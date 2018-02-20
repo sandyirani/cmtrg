@@ -9,6 +9,9 @@ function applyGateAndUpdate(g, dir)
 
   eps = .001
   change = 2*eps
+  @show(X)
+  @show(test)
+  @show(B)
 
   (A2, B2) = rotateTensors(A,B,dir)
 

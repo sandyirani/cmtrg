@@ -14,6 +14,8 @@ X2D2 = X*X*D*D
 
 A = rand(D, D, D, D, pd) #pd is the particle dimension
 B = rand(D, D, D, D, pd)
+test = rand(D,D,pd)
+
 
 C = [rand(X, X) for i=1:4]
 Ta = [rand(X, D, D, X) for i=1:4]
