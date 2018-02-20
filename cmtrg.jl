@@ -21,9 +21,9 @@ Tb = [rand(X, D, D, X) for i=1:4]
 for i = 1:4
   for j = 1:X, k = 1:X
     for a = 1:D, b = a+1:D
-      Ta[i][j,a,b,k] = Ta[i][j,a,b,k] + Ta[i][j,b,a,k]
+      Ta[i][j,a,b,k] = .5(Ta[i][j,a,b,k] + Ta[i][j,b,a,k])
       Ta[i][j,b,a,k] = Ta[i][j,a,b,k]
-      Tb[i][j,a,b,k] = Tb[i][j,a,b,k] + Tb[i][j,b,a,k]
+      Tb[i][j,a,b,k] = .5(Tb[i][j,a,b,k] + Tb[i][j,b,a,k])
       Tb[i][j,b,a,k] = Tb[i][j,a,b,k]
     end
   end
@@ -49,6 +49,7 @@ Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
 function mainLoop()
   numIter = 1000
   energies = zeros(numIter)
+  tau = .2
   for iter = 1:numIter
       iter%100 == 0 && (tau = 0.2*100/iter)
       taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)

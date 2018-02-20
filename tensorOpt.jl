@@ -100,7 +100,7 @@ function mergeRight(ABup, ABdown)
 end
 
 function mergeLeft(ABup, ABdown)
-  Temp = reshape(E[1],XD2,X)*reshape(E[2],X,XD2)* #X3 D6
+  Temp = reshape(E[1],XD2,X)*reshape(E[2],X,XD2) #X3 D6
   Temp = reshape(Temp, X, D, D, D, D, X)
   @tensor begin
     Temp2[y, c, cp, b, bp, z] := Temp[y, d, dp, a, ap, z] * ABup[a, b, c, d, s] * ABdown[ap, bp, cp, dp, s] #X2 D8 pd
@@ -115,7 +115,7 @@ end
 function makeR(AB, right)
 
   if right
-    Temp = mergeRight(AB, conj.(AB)
+    Temp = mergeRight(AB, conj.(AB))
     R = makeD4Matrix(Temp, E[6], E[1], E[2])
     R = [R[b,c,d,a,bp,cp,dp,ap] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:pd]
   else
@@ -123,7 +123,7 @@ function makeR(AB, right)
     R = makeD4Matrix(E[5], Temp3, E[3], E[4])
     R = [R[c,d,a,b,cp,dp,ap,bp] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:pd]
   end
-  return(JK(reshape(R,^4,D^4),eye(2))
+  return(JK(reshape(R,D^4,D^4),eye(2)))
 
 end
 
