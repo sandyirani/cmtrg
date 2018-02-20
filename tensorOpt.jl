@@ -4,23 +4,16 @@ function JK(a,b)	# Julia kron,  ordered for julia arrays; returns matrix
     reshape(Float64[a[i,ip] * b[j,jp] for i=1:a1, j=1:b1, ip=1:a2, jp=1:b2],a1*b1,a2*b2)
 end
 
-
-function applyGateAndUpdate(g, dir)
-
+function applyGateAndUpdate(g, dir, A, B)
   eps = .001
   change = 2*eps
-  @show(X)
-  @show(test)
-  @show(B)
 
   (A2, B2) = rotateTensors(A,B,dir)
-
   (A2p, B2p) = applyGate(A2, B2, g)
-
   setEnv(A2, B2, dir)
-
   oldVecA = ones(D^4*pd)
   oldVecB = ones(D^4*pd)
+
   while( change > eps )
     R = makeR(B2,true)
     S = makeS(B2,A2p,B2p,true)
@@ -36,9 +29,10 @@ function applyGateAndUpdate(g, dir)
     change = max(change, change2)
   end
 
-  (A, B) = rotateTensorsBack(A2,B2,dir)
-
+  return(rotateTensorsBack(A2,B2,dir))
 end
+
+
 
 function getNewAB(R, S)
   return(inv(R)*S)
@@ -46,7 +40,7 @@ end
 
 function applyGate(A2,B2,g)
   @tensor begin
-    ABg[a,e,f,s1,b,c,d,s2p] := A2[a,x,e,f,s1]*B2[b,c,d,x,s2]*g[s1,s2,s1p,s2p]
+    ABg[a,e,f,s1p,b,c,d,s2p] := A2[a,x,e,f,s1]*B2[b,c,d,x,s2]*g[s1,s2,s1p,s2p]
   end
   ABg = reshape(ABg,D^3*pd,D^3*pd)
   (U,d,V) = svd(ABg)
@@ -56,7 +50,7 @@ function applyGate(A2,B2,g)
   B2p = reshape(U,newDim,D,D,D,pd)
   A2p = [A2p[i,j,k,s,l] for i=1:D, l=1:newDim, j=1:D, k=1:D, s=1:pd]
   B2p = [B2p[i,j,k,l,s] for j=1:D, k=1:D, l=1:D, i=1:newDim, s=1:pd]
-  Return(A2p, B2p)
+  return(A2p, B2p)
 end
 
 function setEnv(A2,B2,dir)
@@ -99,7 +93,7 @@ function mergeRight(ABup, ABdown)
   @tensor begin
     Temp3[x, d, dp, z] := Temp2[x, c, cp, d, dp, y] * E5[y, c, cp, z] # X3 D6
   end
-  Return(Temp3)
+  return(Temp3)
 end
 
 function mergeLeft(ABup, ABdown)
@@ -112,7 +106,7 @@ function mergeLeft(ABup, ABdown)
   @tensor begin
     Temp3[x, b, bp, z] := E6[x, c, cp, y] * Temp2[y, c, cp, b, bp, z] #X3 D6
   end
-  Return(Temp3)
+  return(Temp3)
 end
 
 function makeR(AB, right)
@@ -120,11 +114,11 @@ function makeR(AB, right)
   if right
     Temp = mergeRight(AB, conj.(AB))
     R = makeD4Matrix(Temp, E[6], E[1], E[2])
-    R = [R[b,c,d,a,bp,cp,dp,ap] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:pd]
+    R = [R[b,c,d,a,bp,cp,dp,ap] for a=1:D,b=1:D,c=1:D,d=1:D,ap=1:D,bp=1:D,cp=1:D,dp=1:D]
   else
     Temp = mergeLeft(AB, conj.(AB))
-    R = makeD4Matrix(E[5], Temp3, E[3], E[4])
-    R = [R[c,d,a,b,cp,dp,ap,bp] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:pd]
+    R = makeD4Matrix(E[5], Temp, E[3], E[4])
+    R = [R[c,d,a,b,cp,dp,ap,bp] for a=1:D,b=1:D,c=1:D,d=1:D,ap=1:D,bp=1:D,cp=1:D,dp=1:D]
   end
   return(JK(reshape(R,D^4,D^4),eye(2)))
 
@@ -135,18 +129,18 @@ function makeS(AB, AP, BP, right)
     Temp = mergeRight(AB, BP)
     S = makeD4Matrix(Temp, E[6], E[1], E[2])
     s = size(S)
-    S = [S[b,c,d,a,bp,cp,dp,ap] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:s[5],cp=1:pd,dp=1:pd]
+    S = [S[b,c,d,a,bp,cp,dp,ap] for a=1:D,b=1:D,c=1:D,d=1:D,ap=1:D,bp=1:s[5],cp=1:D,dp=1:D]
     S = reshape(S,D^4,D^3*s[5])
-    S = reshape(S * reshape(AP,D^3*s[5],pd), D^3*s[5]*pd) # D8 g d
+    S = reshape(S * reshape(AP,D^3*s[5],pd), D^4*pd) # D8 g d
   else
     Temp = mergeLeft(AB, AP)
-    S = makeD4Matrix(E[5], Temp3, E[3], E[4])
+    S = makeD4Matrix(E[5], Temp, E[3], E[4])
     s = size(S)
-    S = [S[c,d,a,b,cp,dp,ap,bp] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:s[6]]
+    S = [S[c,d,a,b,cp,dp,ap,bp] for a=1:D,b=1:D,c=1:D,d=1:D,ap=1:D,bp=1:D,cp=1:D,dp=1:s[6]]
     S = reshape(S,D^4,D^3*s[6])
-    S = reshape(S * reshape(AP,D^3*s[5],pd), D^3*s[5]*pd) # D8 g d
+    S = reshape(S * reshape(AP,D^3*s[6],pd), D^4*pd) # D8 g d
   end
-  Return(S)
+  return(S)
 end
 
 function makeD4Matrix(J, K, L, M)
@@ -170,7 +164,7 @@ function makeLowerEs(T1, C1, T2, T3, C2, T4, P1, P2)
   Temp = reshape(T1,XD2,X)*C1*reshape(T2,X,XD2) # X3 D4
   Temp = reshape(Temp, X, D, D, D, D, X)
   @tensor begin
-    E5[x, a, ap, y, d, dp] := Temp[x, b, bp, c, cp, y] * P2[a, b, c, d, s] * P2'[ap, bp, cp, dp, s] #X2 D8 d
+    E5[x, a, ap, y, d, dp] := Temp[x, b, bp, c, cp, y] * P2[a, b, c, d, s] * P2[ap, bp, cp, dp, s] #X2 D8 d
   end
   E[5] = reshape(E5, X, D, D, XD2)
   Temp = reshape(T3,XD2,X)*C2*reshape(T4,X,XD2) # X3 D4
@@ -197,16 +191,16 @@ function rotateTensors(Ap,Bp,dir)
     A2 = [Bp[a,b,c,d,s] for d = 1:D, a = 1:D, b = 1:D, c = 1:D, s = 1:pd]
     B2 = [Ap[a,b,c,d,s] for d = 1:D, a = 1:D, b = 1:D, c = 1:D, s = 1:pd]
   end
-  Return(A2,B2)
+  return(A2,B2)
 
 end
 
 function rotateTensorsBack(Ap,Bp,dir)
   if (dir == RIGHT || dir == LEFT)
-    Return(rotateTensors(Ap,Bp,dir))
+    return(rotateTensors(Ap,Bp,dir))
   elseif (dir == UP)
-    Return(rotateTensors(Ap,Bp,DOWN))
+    return(rotateTensors(Ap,Bp,DOWN))
   elseif (dir == DOWN)
-    Return(rotateTensors(Ap,Bp,UP))
+    return(rotateTensors(Ap,Bp,UP))
   end
 end

@@ -1,4 +1,4 @@
-function updateEnvironment()
+function updateEnvironment(A,B)
 
   EPS = .001
   change = 1
@@ -79,7 +79,7 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   newTAl = reshape(W'*reshape(TAl1,XD2,X*D^4),XD2,XD2)
   newTAl = reshape(newTAl1*Z,X,D,D,X)
 
-  Return(newCld, newTAl, newTBl, newClu)
+  return(newCld, newTAl, newTBl, newClu)
 
 end
 
@@ -87,5 +87,5 @@ function doubleTensor(AB)
     @tensor begin
         ABdub[a,ap,b,bp,c,cp,d,cp] := AB[a,b,c,d,s]*AB'[ap,bp,cp,dp,s]
     end
-    Return(reshape(ABdub,D^2,D^2,D^2,D^2))
+    return(reshape(ABdub,D^2,D^2,D^2,D^2))
 end
