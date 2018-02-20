@@ -4,9 +4,11 @@ function JK(a,b)	# Julia kron,  ordered for julia arrays; returns matrix
     reshape(Float64[a[i,ip] * b[j,jp] for i=1:a1, j=1:b1, ip=1:a2, jp=1:b2],a1*b1,a2*b2)
 end
 
-eps = .001
 
 function applyGateAndUpdate(g, dir)
+
+  eps = .001
+  change = 2*eps
 
   (A2, B2) = rotateTensors(A,B,dir)
 
@@ -14,24 +16,29 @@ function applyGateAndUpdate(g, dir)
 
   setEnv(A2, B2, dir)
 
-  change = 2*eps
-
+  oldVecA = ones(D^4*pd)
+  oldVecB = ones(D^4*pd)
   while( change > eps )
     R = makeR(B2,true)
     S = makeS(B2,A2p,B2p,true)
-    newA = reshape(getNewAB(R,S),D,D,D,D,pd)
-    change = max(sum(abs.(newA-A2)), change)
-    A2 = newA
+    newVecA = getNewAB(R,S)
+    A2 = reshape(newVecA,D,D,D,D,pd)
+    change = abs((oldVecA'*R*oldVecA - oldVecA'*S - S'*oldVecA) - (newVecA'*R*newVecA - newVecA'*S - S'*newVecA))
 
     R = makeR(A2,false)
     S = makeS(A2,A2p,B2p,false)
-    newB = reshape(getNewAB(R,S),D,D,D,D,pd)
-    change = max(sum(abs.(newB-B2)), change)
-    B2 = newB
+    newVecB = getNewAB(R,S)
+    B2 = reshape(newVecB,D,D,D,D,pd)
+    change2 = abs((oldVecB'*R*oldVecB - oldVecB'*S - S'*oldVecB) - (newVecB'*R*newVecB - newVecB'*S - S'*newVecB))
+    change = max(change, change2)
   end
 
   (A, B) = rotateTensorsBack(A2,B2,dir)
 
+end
+
+function getNewAB(R, S)
+  return(inv(R)*S)
 end
 
 function applyGate(A2,B2,g)

@@ -1,25 +1,34 @@
 function updateEnvironment()
 
-    #Need to loop?
-  (A2,B2) = rotateTensors(A,B,RIGHT)
-  (Adub, Bdub) = (doubleTensor(A2),doubleTensor(B2))
-  (C[4], Tb[4], Ta[4], C[1]) = genericUpdate(Ta[3],C[4],Ta[4],Tb[4],C[1],Tb[1],A,B)
-  (C[4], Ta[4], Tb[4], C[1]) = genericUpdate(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],B,A)
+  EPS = .001
+  change = 1
 
-  (A2,B2) = rotateTensors(A,B,UP)
-  (Adub, Bdub) = (doubleTensor(A2),doubleTensor(B2))
-  (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],A2,B2)
-  (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],B2,A2)
+  Adub = [zeros(D^2,D^2,D^2,D^2) for i=1:4]
+  Bdub = [zeros(D^2,D^2,D^2,D^2) for i=1:4]
+  for dir=1:4
+    (A2,B2) = rotateTensors(A,B,dir)
+    (Adub[dir], Bdub[dir]) = (doubleTensor(A2),doubleTensor(B2))
+  end
 
-  (A2,B2) = rotateTensors(A,B,LEFT)
-  (Adub, Bdub) = (doubleTensor(A2),doubleTensor(B2))
-  (C[2], Tb[2], Ta[2], C[3]) = genericUpdate(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],A2,B2)
-  (C[2], Ta[2], Tb[2], C[3]) = genericUpdate(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],B2,A2)
+  while(change > EPS)
+    Cold = copy(C)
+    Taold = copy(Ta)
+    Tbold = copy(Tb)
 
-  (A2,B2) = rotateTensors(A,B,DOWN)
-  (Adub, Bdub) = (doubleTensor(A2),doubleTensor(B2))
-  (C[3], Ta[3], Tb[3], C[4]) = genericUpdate(Tb[2],C[3],Tb[3],Ta[3],C[4],Ta[4],A2,B2)
-  (C[3], Tb[3], Ta[3], C[4]) = genericUpdate(Ta[2],C[3],Ta[3],Tb[3],C[4],Tb[4],B2,A2)
+    (C[4], Tb[4], Ta[4], C[1]) = genericUpdate(Ta[3],C[4],Ta[4],Tb[4],C[1],Tb[1],Adub[RIGHT],Bdub[RIGHT])
+    (C[4], Ta[4], Tb[4], C[1]) = genericUpdate(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
+
+    (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
+    (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])
+
+    (C[2], Tb[2], Ta[2], C[3]) = genericUpdate(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],Adub[LEFT],Bdub[LEFT])
+    (C[2], Ta[2], Tb[2], C[3]) = genericUpdate(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
+
+    (C[3], Ta[3], Tb[3], C[4]) = genericUpdate(Tb[2],C[3],Tb[3],Ta[3],C[4],Ta[4],Adub[DOWN],Bdub[DOWN])
+    (C[3], Tb[3], Ta[3], C[4]) = genericUpdate(Ta[2],C[3],Ta[3],Tb[3],C[4],Tb[4],Bdub[DOWN],Adub[DOWN])
+
+    change = max(sum(abs.(C-Cold)), sum(abs.(Taold-Ta)), sum(abs.(Tbold-Tb)))
+  end
 
 end
 
