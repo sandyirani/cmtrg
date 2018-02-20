@@ -108,11 +108,11 @@ end
 function makeR(AB, right)
 
   if right
-    Temp = mergeRight(AB, AB)
+    Temp = mergeRight(AB, conj.(AB)
     R = makeD4Matrix(Temp, E[6], E[1], E[2])
     R = [R[b,c,d,a,bp,cp,dp,ap] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:pd]
   else
-    Temp = mergeLeft(AB, AB)
+    Temp = mergeLeft(AB, conj.(AB))
     R = makeD4Matrix(E[5], Temp3, E[3], E[4])
     R = [R[c,d,a,b,cp,dp,ap,bp] for a=1:pd,b=1:pd,c=1:pd,d=1:pd,ap=1:pd,bp=1:pd,cp=1:pd,dp=1:pd]
   end
