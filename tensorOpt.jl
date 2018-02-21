@@ -4,6 +4,44 @@ function JK(a,b)	# Julia kron,  ordered for julia arrays; returns matrix
     reshape(Float64[a[i,ip] * b[j,jp] for i=1:a1, j=1:b1, ip=1:a2, jp=1:b2],a1*b1,a2*b2)
 end
 
+function updateTest()
+    eps = .001
+    change = 2*eps
+
+    A2 = rand(D,D,D,D,pd)
+    B2 = rand(D,D,D,D,pd)
+    A2p = rand(D,D,D,D,pd)
+    B2p = rand(D,D,D,D,pd)
+    setEnv(A2, B2, RIGHT)
+    oldVecA = ones(D^4*pd)
+    oldVecB = ones(D^4*pd)
+
+    while( change > eps )
+        R = makeR(B2,true)
+        S = makeS(B2,A2p,B2p,true)
+        newVecA = getNewAB(R,S)
+        A2 = reshape(newVecA,D,D,D,D,pd)
+        delta = (oldVecA'*R*oldVecA - oldVecA'*S - S'*oldVecA) - (newVecA'*R*newVecA - newVecA'*S - S'*newVecA)
+        delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
+        change = abs(delta)
+        @show("Right")
+        @show(sum(abs.(R)))
+        @show(delta)
+
+        R = makeR(A2,false)
+        S = makeS(A2,A2p,B2p,false)
+        newVecB = getNewAB(R,S)
+        B2 = reshape(newVecB,D,D,D,D,pd)
+        delta = (oldVecB'*R*oldVecB - oldVecB'*S - S'*oldVecB) - (newVecB'*R*newVecB - newVecB'*S - S'*newVecB)
+        delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
+        change = max(change, abs(delta))
+        @show("Left")
+        @show(sum(abs.(R)))
+        @show(delta)
+    end
+    @show("End")
+end
+
 function applyGateAndUpdate(g, dir, A, B)
   eps = .001
   change = 2*eps
