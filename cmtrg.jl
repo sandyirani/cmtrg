@@ -52,7 +52,6 @@ function mainLoop()
     energies = zeros(numIter)
     tau = .2
     for iter = 1:numIter
-        @show(size(Bg))
         iter%100 == 0 && (tau = 0.2*100/iter)
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
         println("\n iteration = $iter")
