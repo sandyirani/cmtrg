@@ -7,10 +7,35 @@ end
 function anotherTest()
 
     for j = 1:10
-        test = rand(D^4*pd,D^4*pd)/(.5*D^2*sqrt(pd))
+        test = rand(D^4*pd,D^4*pd)
+        @show(sum(test))
+        @show(det(test))
         @show(sum(abs.(inv(test)*test-eye(D^4*pd))))
     end
 end
+
+function anotherTest2()
+
+    M1 = rand(D,D,D,D,pd)
+    M2 = rand(D,D,D,D,pd)
+    setEnv(M1, M2, RIGHT)
+    Temp = mergeRight(M1, M1)
+    #Temp = rand(X,D,D,XD2)
+    E6 = rand(XD2,D,D,X)
+    E1 = rand(X,D,D,X)
+    E2 = rand(X,D,D,X)
+    R = makeD4Matrix(Temp, E6, E1, E2)
+    R = makeD4Matrix(Temp, E[6], E[1], E[2])
+    R = reshape(R,D^4,D^4)
+    R = JK(R,eye(2))
+    #R = makeR(M1,true)
+    @show(rank(R))
+    @show(det(R))
+    @show(rank(R))
+    @show(sum(abs.(inv(R)*R-eye(D^4*2))))
+end
+
+
 
 function updateTest()
     eps = .001
@@ -28,7 +53,8 @@ function updateTest()
         @show(sum(abs.(E[j])))
     end
 
-    while( change > eps )
+    #while( change > eps )
+    for j = 1:5
         R = makeR(B2,true)
         S = makeS(B2,A2p,B2p,true)
         newVecA = getNewAB(R,S)
@@ -37,6 +63,8 @@ function updateTest()
         change = abs(delta)
         delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
         @show("Right")
+        @show(rank(R))
+        @show(det(R))
         @show(sum(abs.(R)))
         @show(delta)
 
@@ -48,6 +76,8 @@ function updateTest()
         change = max(change, abs(delta))
         delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
         @show("Left")
+        @show(rank(R))
+        @show(det(R))
         @show(sum(abs.(R)))
         @show(delta)
     end
