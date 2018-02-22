@@ -13,9 +13,9 @@ XD2 = X*D*D
 X2D2 = X*X*D*D
 
 
-C = [rand(X, X) for i=1:4]
-Ta = [rand(X, D, D, X) for i=1:4]
-Tb = [rand(X, D, D, X) for i=1:4]
+C = [rand(X, X)/(.5*X) for i=1:4]
+Ta = [rand(X, D, D, X)/(.5*X*D) for i=1:4]
+Tb = [rand(X, D, D, X)/(.5*X*D) for i=1:4]
 for i = 1:4
   for j = 1:X, k = 1:X
     for a = 1:D, b = a+1:D
@@ -27,9 +27,9 @@ for i = 1:4
   end
 end
 
-E = [zeros(X, D, D, X) for i=1:6]
-E[5] = zeros(X, D, D, XD2)
-E[6] = zeros(XD2, D, D, X)
+E = [zeros(X, D, D, X)/(.5*X*D) for i=1:6]
+E[5] = zeros(X, D, D, XD2)/(.5*XD2)
+E[6] = zeros(XD2, D, D, X)/(.5*XD2)
 
 RIGHT = 1
 LEFT = 2
