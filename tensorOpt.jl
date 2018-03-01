@@ -4,85 +4,6 @@ function JK(a,b)	# Julia kron,  ordered for julia arrays; returns matrix
     reshape(Float64[a[i,ip] * b[j,jp] for i=1:a1, j=1:b1, ip=1:a2, jp=1:b2],a1*b1,a2*b2)
 end
 
-function anotherTest()
-
-    for j = 1:10
-        test = rand(D^4*pd,D^4*pd)
-        @show(sum(test))
-        @show(det(test))
-        @show(sum(abs.(inv(test)*test-eye(D^4*pd))))
-    end
-end
-
-function anotherTest2()
-
-    M1 = rand(D,D,D,D,pd)
-    M2 = rand(D,D,D,D,pd)
-    setEnv(M1, M2, RIGHT)
-    Temp = mergeRight(M1, M1)
-    #Temp = rand(X,D,D,XD2)
-    E6 = rand(XD2,D,D,X)
-    E1 = rand(X,D,D,X)
-    E2 = rand(X,D,D,X)
-    R = makeD4Matrix(Temp, E6, E1, E2)
-    R = makeD4Matrix(Temp, E[6], E[1], E[2])
-    R = reshape(R,D^4,D^4)
-    R = JK(R,eye(2))
-    #R = makeR(M1,true)
-    @show(rank(R))
-    @show(det(R))
-    @show(rank(R))
-    @show(sum(abs.(inv(R)*R-eye(D^4*2))))
-end
-
-
-
-function updateTest()
-    eps = .001
-    change = 2*eps
-
-    A2 = rand(D,D,D,D,pd)/(.5*sqrt(D^4*pd))
-    B2 = rand(D,D,D,D,pd)/(.5*sqrt(D^4*pd))
-    A2p = rand(D,D,D,D,pd)/(.5*sqrt(D^4*pd))
-    B2p = rand(D,D,D,D,pd)/(.5*sqrt(D^4*pd))
-    setEnv(A2, B2, RIGHT)
-    oldVecA = ones(D^4*pd)
-    oldVecB = ones(D^4*pd)
-
-    for j = 1:6
-        @show(sum(abs.(E[j])))
-    end
-
-    #while( change > eps )
-    for j = 1:5
-        R = makeR(B2,true)
-        S = makeS(B2,A2p,B2p,true)
-        newVecA = getNewAB(R,S)
-        A2 = reshape(newVecA,D,D,D,D,pd)
-        delta = (oldVecA'*R*oldVecA - oldVecA'*S - S'*oldVecA) - (newVecA'*R*newVecA - newVecA'*S - S'*newVecA)
-        change = abs(delta)
-        delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
-        @show("Right")
-        @show(rank(R))
-        @show(det(R))
-        @show(sum(abs.(R)))
-        @show(delta)
-
-        R = makeR(A2,false)
-        S = makeS(A2,A2p,B2p,false)
-        newVecB = getNewAB(R,S)
-        B2 = reshape(newVecB,D,D,D,D,pd)
-        delta = (oldVecB'*R*oldVecB - oldVecB'*S - S'*oldVecB) - (newVecB'*R*newVecB - newVecB'*S - S'*newVecB)
-        change = max(change, abs(delta))
-        delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
-        @show("Left")
-        @show(rank(R))
-        @show(det(R))
-        @show(sum(abs.(R)))
-        @show(delta)
-    end
-    @show("End")
-end
 
 function applyGateAndUpdate(g, dir, A, B)
   eps = .001
@@ -288,4 +209,94 @@ function rotateTensorsBack(Ap,Bp,dir)
   elseif (dir == DOWN)
     return(rotateTensors(Ap,Bp,UP))
   end
+end
+
+function getLogNormMatrix(M)
+    m = size(M)
+    numM = sum(m)
+    sumM = sum(abs.(M))
+    aveM = sumM/numM
+    renorm = log(10,aveM)
+    return(Int64(round(renorm)))
+end
+
+
+function anotherTest()
+
+    for j = 1:10
+        test = rand(D^4*pd,D^4*pd)
+        @show(sum(test))
+        @show(det(test))
+        @show(sum(abs.(inv(test)*test-eye(D^4*pd))))
+    end
+end
+
+function anotherTest2()
+
+    M1 = rand(D,D,D,D,pd)
+    M2 = rand(D,D,D,D,pd)
+    setEnv(M1, M2, RIGHT)
+    Temp = mergeRight(M1, M1)
+    #Temp = rand(X,D,D,XD2)
+    E6 = rand(XD2,D,D,X)
+    E1 = rand(X,D,D,X)
+    E2 = rand(X,D,D,X)
+    R = makeD4Matrix(Temp, E6, E1, E2)
+    R = makeD4Matrix(Temp, E[6], E[1], E[2])
+    R = reshape(R,D^4,D^4)
+    R = JK(R,eye(2))
+    #R = makeR(M1,true)
+    @show(rank(R))
+    @show(det(R))
+    @show(rank(R))
+    @show(sum(abs.(inv(R)*R-eye(D^4*2))))
+end
+
+
+
+function updateTest()
+    eps = .001
+    change = 2*eps
+
+    A2 = rand(D,D,D,D,pd)/(.5*sqrt(D^4*pd))
+    B2 = rand(D,D,D,D,pd)/(.5*sqrt(D^4*pd))
+    A2p = rand(D,D,D,D,pd)/(.5*sqrt(D^4*pd))
+    B2p = rand(D,D,D,D,pd)/(.5*sqrt(D^4*pd))
+    setEnv(A2, B2, RIGHT)
+    oldVecA = ones(D^4*pd)
+    oldVecB = ones(D^4*pd)
+
+    for j = 1:6
+        @show(sum(abs.(E[j])))
+    end
+
+    #while( change > eps )
+    for j = 1:5
+        R = makeR(B2,true)
+        S = makeS(B2,A2p,B2p,true)
+        newVecA = getNewAB(R,S)
+        A2 = reshape(newVecA,D,D,D,D,pd)
+        delta = (oldVecA'*R*oldVecA - oldVecA'*S - S'*oldVecA) - (newVecA'*R*newVecA - newVecA'*S - S'*newVecA)
+        change = abs(delta)
+        delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
+        @show("Right")
+        @show(rank(R))
+        @show(det(R))
+        @show(sum(abs.(R)))
+        @show(delta)
+
+        R = makeR(A2,false)
+        S = makeS(A2,A2p,B2p,false)
+        newVecB = getNewAB(R,S)
+        B2 = reshape(newVecB,D,D,D,D,pd)
+        delta = (oldVecB'*R*oldVecB - oldVecB'*S - S'*oldVecB) - (newVecB'*R*newVecB - newVecB'*S - S'*newVecB)
+        change = max(change, abs(delta))
+        delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
+        @show("Left")
+        @show(rank(R))
+        @show(det(R))
+        @show(sum(abs.(R)))
+        @show(delta)
+    end
+    @show("End")
 end
