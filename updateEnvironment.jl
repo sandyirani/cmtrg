@@ -11,25 +11,54 @@ function updateEnvironment(A,B)
   end
 
   while(change > EPS)
-    Cold = copy(C)
-    Taold = copy(Ta)
-    Tbold = copy(Tb)
-
+    oldVec = getVec(C[4], Ta[4], Tb[4], C[1])
     (C[4], Tb[4], Ta[4], C[1]) = genericUpdate(Ta[3],C[4],Ta[4],Tb[4],C[1],Tb[1],Adub[RIGHT],Bdub[RIGHT])
     (C[4], Ta[4], Tb[4], C[1]) = genericUpdate(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
+    newVec = getVec(C[4], Ta[4], Tb[4], C[1])
+    change = getNormDist(oldVec, newVec)
+    #S@show("Left")
+    @show(getNormDist(oldVec, newVec))
 
+
+    oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
     (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
     (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])
+    newVec = getVec(C[1],Tb[1],Ta[1],C[2])
+    change = max(change, getNormDist(oldVec, newVec))
+    @show("Top")
+    @show(getNormDist(oldVec, newVec))
 
+    oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
     (C[2], Tb[2], Ta[2], C[3]) = genericUpdate(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],Adub[LEFT],Bdub[LEFT])
     (C[2], Ta[2], Tb[2], C[3]) = genericUpdate(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
+    newVec = getVec(C[2],Ta[2],Tb[2],C[3])
+    change = max(change, getNormDist(oldVec, newVec))
+    @show("Right")
+    @show(getNormDist(oldVec, newVec))
 
+    oldVec = getVec(C[3],Tb[3],Ta[3],C[4])
     (C[3], Ta[3], Tb[3], C[4]) = genericUpdate(Tb[2],C[3],Tb[3],Ta[3],C[4],Ta[4],Adub[DOWN],Bdub[DOWN])
     (C[3], Tb[3], Ta[3], C[4]) = genericUpdate(Ta[2],C[3],Ta[3],Tb[3],C[4],Tb[4],Bdub[DOWN],Adub[DOWN])
-
-    change = max(sum(abs.(C-Cold)), sum(abs.(Taold-Ta)), sum(abs.(Tbold-Tb)))
+    newVec = getVec(C[3],Tb[3],Ta[3],C[4])
+    change = max(change, getNormDist(oldVec, newVec))
+    @show("Bottom")
+    @show(getNormDist(oldVec, newVec))
   end
 
+end
+
+function getVec(C1,Ta,Tb,C2)
+  M = C1*reshape(Ta,X,XD2)
+  M = reshape(M,XD2,X)*reshape(Tb,X,XD2)
+  M = reshape(M,X*D^4,X)*C2
+  return(reshape(M,X^2*D^4))
+end
+
+function getNormDist(v1,v2)
+  v1 = v1/sqrt(v1'*v1)
+  v2 = v2/sqrt(v2'*v2)
+  #@show(maximum(abs.(v1-v2)))
+  return(sqrt(2-v1'*v2-v2'*v1))
 end
 
 function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
@@ -60,32 +89,40 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   @tensor begin
     Qu[x,c,y,b] := MQu[x,d,a,y]*Adub[a,b,c,d]
   end
-  Qu = reshape(Q1,XD2,XD2)
+  Qu = reshape(Qu,XD2,XD2)
 
   MQd = reshape(reshape(TAd,XD2,X)*Cld*reshape(TAl,X,XD2),X,D^2,D^2,X)
   @tensor begin
     Qd[x,b,y,a] := MQd[x,c,d,y]*Bdub[a,b,c,d]
   end
-  Qd = reshape(Q1,XD2,XD2)
+  Qd = reshape(Qd,XD2,XD2)
 
   MW = conj.(Qd'*Qd) + Qu*Qu'
   evn = eigs(MW;nev=X,ritzvec=true)
   W = evn[2][:,1:X]
 
-  newClu = Z'*Clu1
-  newCld = Cld1*Z
+  newClu = renormalize(Z'*Clu1)
+  newCld = renormalize(Cld1*Z)
   newTBl = reshape(Z'*reshape(TBl1,XD2,X*D^4),XD2,XD2)
-  newTBl = reshape(newTBl1*W,X,D,D,X)
+  newTBl = renormalize(reshape(newTBl*W,X,D,D,X))
   newTAl = reshape(W'*reshape(TAl1,XD2,X*D^4),XD2,XD2)
-  newTAl = reshape(newTAl1*Z,X,D,D,X)
+  newTAl = renormalize(reshape(newTAl*Z,X,D,D,X))
 
-  return(newCld, newTAl, newTBl, newClu)
+  return(newCld, newTBl, newTAl, newClu)
 
 end
 
 function doubleTensor(AB)
+    conjAB = conj.(AB)
     @tensor begin
-        ABdub[a,ap,b,bp,c,cp,d,cp] := AB[a,b,c,d,s]*AB'[ap,bp,cp,dp,s]
+        ABdub[a,ap,b,bp,c,cp,d,dp] := AB[a,b,c,d,s]*conjAB[ap,bp,cp,dp,s]
     end
     return(reshape(ABdub,D^2,D^2,D^2,D^2))
+end
+
+function renormalize(T)
+  t = size(T)
+  aveT = sum(abs.(T))/sum(t)
+  T = T/aveT
+  return(T)
 end

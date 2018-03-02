@@ -4,35 +4,66 @@ function JK(a,b)	# Julia kron,  ordered for julia arrays; returns matrix
     reshape(Float64[a[i,ip] * b[j,jp] for i=1:a1, j=1:b1, ip=1:a2, jp=1:b2],a1*b1,a2*b2)
 end
 
+function test()
+    A = rand(D, D, D, D, pd) #pd is the particle dimension
+    B = rand(D, D, D, D, pd)
+    Avec = reshape(A, D^4*pd)
+    Bvec = reshape(B, D^4*pd)
+    setEnv(A, B, RIGHT)
+
+    R1 = makeR(B,true)
+    S1 = makeS(B,A,B,true)
+
+    #@show(sum(abs.(Avec'*S1)))
+    @show(sum(abs.(Avec'*S1 - Avec'*R1*Avec)))
+
+    R2 = makeR(A,false)
+    S2 = makeS(A,A,B,false)
+
+    #@show(sum(abs.(Bvec'*S2)))
+    @show(sum(abs.(Bvec'*S2 - Bvec'*R2*Bvec)))
+    #@show(sum(abs.(Avec'*S1 - Bvec'*S2)))
+    @show(sum(abs.(Avec'*R1*Avec - Bvec'*R2*Bvec)))
+    @show(S1'*Avec - S2'*Bvec)
+end
+
 
 function applyGateAndUpdate(g, dir, A, B)
-  eps = .001
+  eps = .000001
   change = 2*eps
 
   (A2, B2) = rotateTensors(A,B,dir)
   (A2p, B2p) = applyGate(A2, B2, g)
   setEnv(A2, B2, dir)
-  oldVecA = ones(D^4*pd)
-  oldVecB = ones(D^4*pd)
+  oldCostA = 1
+  oldCostB = 1
 
   while( change > eps )
     R = makeR(B2,true)
     S = makeS(B2,A2p,B2p,true)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
-    delta = (oldVecA'*R*oldVecA - oldVecA'*S - S'*oldVecA) - (newVecA'*R*newVecA - newVecA'*S - S'*newVecA)
-    delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
-    change = abs(delta)
+    newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA
+    delta = (oldCostA - newCostA)/abs(oldCostA)
+    @show(newCostA)
     @show(delta)
+    change = abs(delta)
+    error = sum(abs.(inv(R)*R-eye(D^4*pd)))
+    @show(error)
 
     R = makeR(A2,false)
     S = makeS(A2,A2p,B2p,false)
     newVecB = getNewAB(R,S)
     B2 = reshape(newVecB,D,D,D,D,pd)
-    delta = (oldVecB'*R*oldVecB - oldVecB'*S - S'*oldVecB) - (newVecB'*R*newVecB - newVecB'*S - S'*newVecB)
-    delta = sum(abs.(inv(R)*R-eye(D^4*pd)))
-    change = max(change, abs(delta))
+    newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
+    delta = (oldCostB - newCostB)/abs(oldCostB)
+    @show(newCostB)
     @show(delta)
+    change = max(change, abs(delta))
+    error = sum(abs.(inv(R)*R-eye(D^4*pd)))
+    @show(error)
+    oldCostA = newCostA
+    oldCostB = newCostB
   end
 
   return(rotateTensorsBack(A2,B2,dir))
@@ -144,7 +175,7 @@ function makeS(AB, AP, BP, right)
     s = size(S)
     S = [S[c,d,a,b,cp,dp,ap,bp] for a=1:D,b=1:D,c=1:D,d=1:D,ap=1:D,bp=1:D,cp=1:D,dp=1:s[6]]
     S = reshape(S,D^4,D^3*s[6])
-    S = reshape(S * reshape(AP,D^3*s[6],pd), D^4*pd) # D8 g d
+    S = reshape(S * reshape(BP,D^3*s[6],pd), D^4*pd) # D8 g d
   end
   return(S)
 end

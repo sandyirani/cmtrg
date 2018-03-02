@@ -14,15 +14,13 @@ X2D2 = X*X*D*D
 
 
 C = [rand(X, X)/(.5*X) for i=1:4]
-Ta = [rand(X, D, D, X)/(.5*X*D) for i=1:4]
-Tb = [rand(X, D, D, X)/(.5*X*D) for i=1:4]
+Ta = [zeros(X, D, D, X) for i=1:4]
+Tb = [zeros(X, D, D, X) for i=1:4]
 for i = 1:4
   for j = 1:X, k = 1:X
-    for a = 1:D, b = a+1:D
-      Ta[i][j,a,b,k] = .5(Ta[i][j,a,b,k] + Ta[i][j,b,a,k])
-      Ta[i][j,b,a,k] = Ta[i][j,a,b,k]
-      Tb[i][j,a,b,k] = .5(Tb[i][j,a,b,k] + Tb[i][j,b,a,k])
-      Tb[i][j,b,a,k] = Tb[i][j,a,b,k]
+    for a = 1:D
+      Ta[i][j,a,a,k] = rand()
+      Tb[i][j,a,a,k] = rand()
     end
   end
 end
