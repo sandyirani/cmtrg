@@ -29,7 +29,7 @@ end
 
 
 function applyGateAndUpdate(g, dir, A, B)
-  eps = .000001
+  eps = .00001
   change = 2*eps
 
   (A2, B2) = rotateTensors(A,B,dir)
@@ -43,29 +43,38 @@ function applyGateAndUpdate(g, dir, A, B)
     S = makeS(B2,A2p,B2p,true)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
+    #@show(sum(abs.(A2)))
     newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA
     delta = (oldCostA - newCostA)/abs(oldCostA)
-    @show(newCostA)
-    @show(delta)
+    #@show(newCostA)
+    #@show(delta)
     change = abs(delta)
-    error = sum(abs.(inv(R)*R-eye(D^4*pd)))
-    @show(error)
+    InverseErrorA = sum(abs.(inv(R)*R-eye(D^4*pd)))
+    @show(InverseErrorA)
 
     R = makeR(A2,false)
+    #@show(cond(R))
     S = makeS(A2,A2p,B2p,false)
+    vecB = reshape(B2,D^4*pd)
+    costB = vecB'*R*vecB - vecB'*S - S'*vecB
+    ContractionError = (newCostA - costB)/abs(costB)
+    @show(ContractionError)
     newVecB = getNewAB(R,S)
     B2 = reshape(newVecB,D,D,D,D,pd)
+    #@show(sum(abs.(B2)))
     newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
     delta = (oldCostB - newCostB)/abs(oldCostB)
-    @show(newCostB)
-    @show(delta)
+    #@show(newCostB)
+    #@show(delta)
     change = max(change, abs(delta))
-    error = sum(abs.(inv(R)*R-eye(D^4*pd)))
-    @show(error)
+    InverseErrorB = sum(abs.(inv(R)*R-eye(D^4*pd)))
+    @show(InverseErrorB)
     oldCostA = newCostA
     oldCostB = newCostB
   end
 
+  A2 = renormalize(A2)
+  B2 = renormalize(B2)
   return(rotateTensorsBack(A2,B2,dir))
 end
 

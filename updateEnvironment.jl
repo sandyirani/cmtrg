@@ -19,21 +19,22 @@ function updateEnvironment(A,B)
     #S@show("Left")
     @show(getNormDist(oldVec, newVec))
 
-
-    oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
-    (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
-    (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])
-    newVec = getVec(C[1],Tb[1],Ta[1],C[2])
-    change = max(change, getNormDist(oldVec, newVec))
-    @show("Top")
-    @show(getNormDist(oldVec, newVec))
-
     oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
     (C[2], Tb[2], Ta[2], C[3]) = genericUpdate(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],Adub[LEFT],Bdub[LEFT])
     (C[2], Ta[2], Tb[2], C[3]) = genericUpdate(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
     newVec = getVec(C[2],Ta[2],Tb[2],C[3])
     change = max(change, getNormDist(oldVec, newVec))
     @show("Right")
+    @show(getNormDist(oldVec, newVec))
+  end
+
+while(change > EPS)
+    oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
+    (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
+    (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])
+    newVec = getVec(C[1],Tb[1],Ta[1],C[2])
+    change = getNormDist(oldVec, newVec)
+    @show("Top")
     @show(getNormDist(oldVec, newVec))
 
     oldVec = getVec(C[3],Tb[3],Ta[3],C[4])
@@ -54,11 +55,17 @@ function getVec(C1,Ta,Tb,C2)
   return(reshape(M,X^2*D^4))
 end
 
+function getVecBig(C1,Ta,Tb,C2)
+  M = C1*reshape(Ta,XD2,X*D^4)
+  M = reshape(M,XD2,XD2)*reshape(Tb,XD2,X*D^4)
+  M = reshape(M,X*D^4,XD2)*C2
+  return(reshape(M,X^2*D^4))
+end
+
 function getNormDist(v1,v2)
   v1 = v1/sqrt(v1'*v1)
   v2 = v2/sqrt(v2'*v2)
-  #@show(maximum(abs.(v1-v2)))
-  return(sqrt(2-v1'*v2-v2'*v1))
+  return(sqrt(max(0,2-v1'*v2-v2'*v1)))
 end
 
 function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
@@ -82,7 +89,7 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   Clu1 = reshape(Clu*reshape(TBu,X,XD2),XD2,X)
 
   MZ = Clu1*Clu1' + conj.(Cld1'*Cld1)
-  evn = eigs(MZ;nev=X,ritzvec=true)
+  evn = eigs(MZ;nev=X,which=:LM,ritzvec=true)
   Z = evn[2][:,1:X]
 
   MQu = reshape(reshape(TBl,XD2,X)*Clu*reshape(TBu,X,XD2),X,D^2,D^2,X)
@@ -108,6 +115,12 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   newTAl = reshape(W'*reshape(TAl1,XD2,X*D^4),XD2,XD2)
   newTAl = renormalize(reshape(newTAl*Z,X,D,D,X))
 
+  w1 = getVecBig(Cld1,TBl1,TAl1,Clu1)
+  w2 = getVec(newCld, newTBl, newTAl, newClu)
+  @show("Truncation error")
+  dist = getNormDist(w1,w2)
+  @show(dist)
+
   return(newCld, newTBl, newTAl, newClu)
 
 end
@@ -123,6 +136,6 @@ end
 function renormalize(T)
   t = size(T)
   aveT = sum(abs.(T))/sum(t)
-  T = T/aveT
+  T = T/(aveT*sqrt(sum(t)))
   return(T)
 end
