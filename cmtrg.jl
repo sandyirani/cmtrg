@@ -13,18 +13,14 @@ XD2 = X*D*D
 X2D2 = X*X*D*D
 
 
-C = [rand(X, X)/(.5*X) for i=1:4]
-Ta = [zeros(X, D, D, X) for i=1:4]
-Tb = [zeros(X, D, D, X) for i=1:4]
-for i = 1:4
-  for j = 1:X, k = 1:X
-    for a = 1:D
-      Ta[i][j,a,a,k] = rand()
-      Tb[i][j,a,a,k] = rand()
-    end
-  end
+C = [(rand(X, X)-0.5*ones(X,X))/50 for i=1:4]
+Ta = [(zeros(X, D, D, X)-0.5*ones(X, D, D, X))/50 for i=1:4]
+Tb = [(zeros(X, D, D, X)-0.5*ones(X, D, D, X))/50 for i=1:4]
+for j = 1:4
+    C[j][1,1] = 1
+    Ta[j][1,1,1,1] = 1
+    Tb[j][1,1,1,1] = 1
 end
-
 E = [zeros(X, D, D, X)/(.5*X*D) for i=1:6]
 E[5] = zeros(X, D, D, XD2)/(.5*XD2)
 E[6] = zeros(XD2, D, D, X)/(.5*XD2)
@@ -44,11 +40,14 @@ Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
 
 
 function mainLoop()
-    A = rand(D, D, D, D, pd) #pd is the particle dimension
-    B = rand(D, D, D, D, pd)
+    A = (rand(D, D, D, D, pd) - 0.5*ones(D, D, D, D, pd))/50 #pd is the particle dimension
+    B = (rand(D, D, D, D, pd) - 0.5*ones(D, D, D, D, pd))/50
+    A[1,1,1,1,1] = 1
+    B[1,1,1,1,2] = 1
     numIter = 1000
     energies = zeros(numIter)
     tau = .2
+    updateEnvironment(A,B)
     for iter = 1:numIter
         iter%100 == 0 && (tau = 0.2*100/iter)
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
