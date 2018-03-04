@@ -40,6 +40,7 @@ function applyGateAndUpdate(g, dir, A, B)
 
   while( change > eps )
     R = makeR(B2,true)
+    R = stablizeR(R)
     S = makeS(B2,A2p,B2p,true)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
@@ -53,6 +54,7 @@ function applyGateAndUpdate(g, dir, A, B)
     @show(InverseErrorA)
 
     R = makeR(A2,false)
+    R = stablizeR(R)
     #@show(cond(R))
     S = makeS(A2,A2p,B2p,false)
     vecB = reshape(B2,D^4*pd)
@@ -249,6 +251,30 @@ function rotateTensorsBack(Ap,Bp,dir)
   elseif (dir == DOWN)
     return(rotateTensors(Ap,Bp,UP))
   end
+end
+
+function stablizeR(R)
+    R = 0.5*(R+R')
+    return(R)
+    r = size(R)
+    n = r[1]
+    d1 = Int8(round(n/2))
+    evn1 = eigs(R;nev=d1,which=:LR,ritzvec=true)
+    evn2 = eigs(R;nev=n-d1,which=:SR,ritzvec=true)
+    if (length(evn1[1])+length(evn2[1]) < n)
+        @show("Not enough eigenvalues")
+        return(R)
+    end
+    evs = zeros(n)
+    evs[1:d1] = evn1[1][1:d1]
+    evs[d1+1:n] = evn2[1][1:n-d1]
+    evsNonNeg = [max(0,evs[j]) for j=1:n]
+    eVecs = zeros(n,n)
+    eVecs[:,1:d1] = evn1[2][:,1:d1]
+    eVecs[:,d1+1:n] = evn2[2][:,1:n-d1]
+    testStabilize = sum(abs.(eVecs*diagm(evs)*eVecs'-R))
+    @show(testStabilize)
+    return(eVecs*diagm(evsNonNeg)*eVecs')
 end
 
 function getLogNormMatrix(M)
