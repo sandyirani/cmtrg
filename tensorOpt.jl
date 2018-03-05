@@ -95,7 +95,7 @@ function applyGate(A2,B2,g)
   U = U * diagm(d)
   newDim = length(d)
   A2p = reshape(U,D,D,D,pd,newDim)
-  B2p = reshape(U,newDim,D,D,D,pd)
+  B2p = reshape(V',newDim,D,D,D,pd)
   A2p = [A2p[i,j,k,s,l] for i=1:D, l=1:newDim, j=1:D, k=1:D, s=1:pd]
   B2p = [B2p[i,j,k,l,s] for j=1:D, k=1:D, l=1:D, i=1:newDim, s=1:pd]
   return(A2p, B2p)
@@ -226,18 +226,20 @@ end
 
 function rotateTensors(Ap,Bp,dir)
 
+  ap = size(Ap)
+  bp = size(Bp)
   if (dir == RIGHT)
     A2 = copy(Ap)
     B2 = copy(Bp)
   elseif (dir == LEFT)
-    A2 = [Ap[a,b,c,d,s] for c = 1:D, d = 1:D, a = 1:D, b = 1:D, s = 1:pd]
-    B2 = [Bp[a,b,c,d,s] for c = 1:D, d = 1:D, a = 1:D, b = 1:D, s = 1:pd]
+    A2 = [Ap[a,b,c,d,s] for c = 1:ap[3], d = 1:ap[4], a = 1:ap[1], b = 1:ap[2], s = 1:pd]
+    B2 = [Bp[a,b,c,d,s] for c = 1:bp[3], d = 1:bp[4], a = 1:bp[1], b = 1:bp[2], s = 1:pd]
   elseif (dir == UP)
-    A2 = [Bp[a,b,c,d,s] for b = 1:D, c = 1:D, d = 1:D, a = 1:D, s = 1:pd]
-    B2 = [Ap[a,b,c,d,s] for b = 1:D, c = 1:D, d = 1:D, a = 1:D, s = 1:pd]
+    A2 = [Bp[a,b,c,d,s] for b = 1:bp[2], c = 1:bp[3], d = 1:bp[4], a = 1:bp[1], s = 1:pd]
+    B2 = [Ap[a,b,c,d,s] for b = 1:ap[2], c = 1:ap[3], d = 1:ap[4], a = 1:ap[1], s = 1:pd]
   elseif (dir == DOWN)
-    A2 = [Bp[a,b,c,d,s] for d = 1:D, a = 1:D, b = 1:D, c = 1:D, s = 1:pd]
-    B2 = [Ap[a,b,c,d,s] for d = 1:D, a = 1:D, b = 1:D, c = 1:D, s = 1:pd]
+    A2 = [Bp[a,b,c,d,s] for d = 1:bp[4], a = 1:bp[1], b = 1:bp[2], c = 1:bp[3], s = 1:pd]
+    B2 = [Ap[a,b,c,d,s] for d = 1:ap[4], a = 1:ap[1], b = 1:ap[2], c = 1:ap[3], s = 1:pd]
   end
   return(A2,B2)
 
