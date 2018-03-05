@@ -16,7 +16,7 @@ function updateEnvironment(A,B)
     (C[4], Ta[4], Tb[4], C[1]) = genericUpdate(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
     newVec = getVec(C[4], Ta[4], Tb[4], C[1])
     change = getNormDist(oldVec, newVec)
-    #S@show("Left")
+    @show("Left")
     @show(getNormDist(oldVec, newVec))
 
     oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
@@ -28,7 +28,7 @@ function updateEnvironment(A,B)
     @show(getNormDist(oldVec, newVec))
   end
 
-while(change > EPS)
+  while(change > EPS)
     oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
     (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
     (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])

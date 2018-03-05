@@ -40,7 +40,14 @@ sm = sp'
 Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
 # order for Htwosite is s1, s2, s1p, s2p
 
-
+function testLoop()
+  (A,B) = initializeAB()
+  tau = .2
+  updateEnvironment(A,B)
+  taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
+  (A,B) = applyGateAndUpdate(taugate, RIGHT, A, B)
+  updateEnvironment(A,B)
+end
 
 function mainLoop()
     (A,B) = initializeAB()
