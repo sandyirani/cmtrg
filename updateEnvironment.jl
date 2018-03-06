@@ -28,6 +28,7 @@ function updateEnvironment(A,B)
     @show(getNormDist(oldVec, newVec))
   end
 
+  change = 1
   while(change > EPS)
     oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
     (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])

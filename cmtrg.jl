@@ -46,7 +46,7 @@ function testLoop()
   updateEnvironment(A,B)
   taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
   (A,B) = applyGateAndUpdate(taugate, RIGHT, A, B)
-  updateEnvironment(A,B)
+  #updateEnvironment(A,B)
 end
 
 function mainLoop()
