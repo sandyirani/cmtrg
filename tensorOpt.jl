@@ -28,10 +28,12 @@ function applyGateAndUpdate(g, dir, A, B)
     newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA
     delta = (oldCostA - newCostA)/abs(oldCostA)
     change = abs(delta)
-    InverseErrorA = sum(abs.(inv(R)*R-eye(D^4*pd)))
+
+    InverseErrorA = sum(abs.(R*newVecA-S))
     if (InverseErrorA > .01)
       @show(InverseErrorA)
     end
+
 
     R = makeR(A2,false)
     R = stablizeR(R)
@@ -41,7 +43,7 @@ function applyGateAndUpdate(g, dir, A, B)
     newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
     delta = (oldCostB - newCostB)/abs(oldCostB)
     change = max(change, abs(delta))
-    InverseErrorB = sum(abs.(inv(R)*R-eye(D^4*pd)))
+    InverseErrorB = sum(abs.(R*newVecB-S))
     if (InverseErrorB > .01)
       @show(InverseErrorB)
     end
@@ -60,7 +62,8 @@ end
 
 
 function getNewAB(R, S)
-  return(inv(R)*S)
+  #return(inv(R)*S)
+  return(\(R,S))
 end
 
 function applyGate(A2,B2,g)
@@ -234,7 +237,7 @@ end
 
 function stablizeR(R)
     R = 0.5*(R+R')
-    #return(R)
+    return(R)
     r = size(R)
     n = r[1]
     d1 = Int8(round(n/2))

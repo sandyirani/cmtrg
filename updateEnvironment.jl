@@ -11,42 +11,43 @@ function updateEnvironment(A,B)
   end
 
   numUpdate = 10
+  change = 0
 
   for j = 1:numUpdate
     oldVec = getVec(C[4], Ta[4], Tb[4], C[1])
-    (C[4], Tb[4], Ta[4], C[1]) = genericUpdate(Ta[3],C[4],Ta[4],Tb[4],C[1],Tb[1],Adub[RIGHT],Bdub[RIGHT])
-    (C[4], Ta[4], Tb[4], C[1]) = genericUpdate(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
+    (C[4], Tb[4], Ta[4], C[1]) = genericUpdate2(Ta[3],C[4],Ta[4],Tb[4],C[1],Tb[1],Adub[RIGHT],Bdub[RIGHT])
+    (C[4], Ta[4], Tb[4], C[1]) = genericUpdate2(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
     newVec = getVec(C[4], Ta[4], Tb[4], C[1])
-    leftChange = getNormDist(oldVec, newVec)
-    #@show(leftChange)
+    change = getNormDist(oldVec, newVec)
   end
+  @show(change)
 
   for j = 1:numUpdate
     oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
-    (C[2], Tb[2], Ta[2], C[3]) = genericUpdate(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],Adub[LEFT],Bdub[LEFT])
-    (C[2], Ta[2], Tb[2], C[3]) = genericUpdate(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
+    (C[2], Tb[2], Ta[2], C[3]) = genericUpdate2(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],Adub[LEFT],Bdub[LEFT])
+    (C[2], Ta[2], Tb[2], C[3]) = genericUpdate2(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
     newVec = getVec(C[2],Ta[2],Tb[2],C[3])
-    rightChange = getNormDist(oldVec, newVec)
-    #@show(rightChange)
+    change = getNormDist(oldVec, newVec)
   end
+  @show(change)
 
   for j = 1:numUpdate
     oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
-    (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
-    (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])
+    (C[1], Ta[1], Tb[1], C[2]) = genericUpdate2(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
+    (C[1], Tb[1], Ta[1], C[2]) = genericUpdate2(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])
     newVec = getVec(C[1],Tb[1],Ta[1],C[2])
-    upChange = getNormDist(oldVec, newVec)
-    #@show(upChange)
+    change = getNormDist(oldVec, newVec)
   end
+  @show(change)
 
   for j = 1:numUpdate
     oldVec = getVec(C[3],Tb[3],Ta[3],C[4])
-    (C[3], Ta[3], Tb[3], C[4]) = genericUpdate(Tb[2],C[3],Tb[3],Ta[3],C[4],Ta[4],Adub[DOWN],Bdub[DOWN])
-    (C[3], Tb[3], Ta[3], C[4]) = genericUpdate(Ta[2],C[3],Ta[3],Tb[3],C[4],Tb[4],Bdub[DOWN],Adub[DOWN])
+    (C[3], Ta[3], Tb[3], C[4]) = genericUpdate2(Tb[2],C[3],Tb[3],Ta[3],C[4],Ta[4],Adub[DOWN],Bdub[DOWN])
+    (C[3], Tb[3], Ta[3], C[4]) = genericUpdate2(Ta[2],C[3],Ta[3],Tb[3],C[4],Tb[4],Bdub[DOWN],Adub[DOWN])
     newVec = getVec(C[3],Tb[3],Ta[3],C[4])
-    downChange = getNormDist(oldVec, newVec)
-    #@show(downChange)
+    change = getNormDist(oldVec, newVec)
   end
+  @show(change)
 
 
 end
@@ -69,6 +70,60 @@ function getNormDist(v1,v2)
   v1 = v1/sqrt(v1'*v1)
   v2 = v2/sqrt(v2'*v2)
   return(sqrt(max(0,2-v1'*v2-v2'*v1)))
+end
+
+function dosvdtrunc(AA,m)		# AA a matrix;  keep at most m states
+    (u,d,v) = svd(AA)
+    prob = dot(d,d)		# total probability
+    mm = min(m,length(d))	# number of states to keep
+    d = d[1:mm]			# middle matrix in vector form
+    trunc = (prob - dot(d,d))/prob
+    U = u[:,1:mm]
+    V = v[:,1:mm]
+    (U,d,V,trunc)		# AA == U * diagm(d) * V	with error trunc
+end
+
+function genericUpdate2(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
+
+  w0 = getVec(Cld, TAl, TBl, Clu)
+
+  Cld1 = reshape(reshape(TAd,XD2,X)*Cld,X,D^2,X)
+  Cld1 = [Cld1[a,b,c] for a=1:X,c=1:X,b=1:D^2]
+  Cld1 = reshape(Cld1,X,XD2)
+
+  TAl = reshape(TAl,X,D^2,X)
+  @tensor begin
+    TBl1[x,c,b,y,a] := TAl[x,d,y]*Bdub[a,b,c,d]
+  end
+  TBl1 = reshape(TBl1,XD2,D^2,XD2)
+
+  TBl = reshape(TBl,X,D^2,X)
+  @tensor begin
+    TAl1[x,c,b,y,a] := TBl[x,d,y]*Adub[a,b,c,d]
+  end
+  TAl1 = reshape(TAl1,XD2,D^2,XD2)
+
+  Clu1 = reshape(Clu*reshape(TBu,X,XD2),XD2,X)
+
+  w1 = getVecBig(Cld1,TBl1,TAl1,Clu1)
+  #@show(getNormDist(w0,w1))
+
+  (U,d,V,err) = dosvdtrunc(reshape(w1,X,X*D^4),X)
+  newCld = renormalize(U*diagm(d))
+  (U,d,V,err) = dosvdtrunc(reshape(V',XD2,XD2),X)
+  newTBl = renormalize(reshape(U*diagm(d),X,D,D,X))
+  (U,d,V,err) = dosvdtrunc(reshape(V',XD2,X),X)
+  newTAl = renormalize(reshape(U*diagm(d),X,D,D,X))
+  newClu = renormalize(V')
+
+
+
+  w2 = getVec(newCld, newTBl, newTAl, newClu)
+  TruncError = getNormDist(w1,w2)
+  #@show(TruncError)
+
+  return(newCld, newTBl, newTAl, newClu)
+
 end
 
 function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
