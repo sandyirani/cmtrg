@@ -18,7 +18,7 @@ function updateEnvironment(A,B)
     (C[4], Ta[4], Tb[4], C[1]) = genericUpdate(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
     newVec = getVec(C[4], Ta[4], Tb[4], C[1])
     leftChange = getNormDist(oldVec, newVec)
-    @show(leftChange)
+    #@show(leftChange)
   end
 
   for j = 1:numUpdate
@@ -27,7 +27,7 @@ function updateEnvironment(A,B)
     (C[2], Ta[2], Tb[2], C[3]) = genericUpdate(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
     newVec = getVec(C[2],Ta[2],Tb[2],C[3])
     rightChange = getNormDist(oldVec, newVec)
-    @show(rightChange)
+    #@show(rightChange)
   end
 
   for j = 1:numUpdate
@@ -36,7 +36,7 @@ function updateEnvironment(A,B)
     (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])
     newVec = getVec(C[1],Tb[1],Ta[1],C[2])
     upChange = getNormDist(oldVec, newVec)
-    @show(upChange)
+    #@show(upChange)
   end
 
   for j = 1:numUpdate
@@ -45,7 +45,7 @@ function updateEnvironment(A,B)
     (C[3], Tb[3], Ta[3], C[4]) = genericUpdate(Ta[2],C[3],Ta[3],Tb[3],C[4],Tb[4],Bdub[DOWN],Adub[DOWN])
     newVec = getVec(C[3],Tb[3],Ta[3],C[4])
     downChange = getNormDist(oldVec, newVec)
-    @show(downChange)
+    #@show(downChange)
   end
 
 
@@ -122,7 +122,7 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   w1 = getVecBig(Cld1,TBl1,TAl1,Clu1)
   w2 = getVec(newCld, newTBl, newTAl, newClu)
   TruncError = getNormDist(w1,w2)
-  @show(TruncError)
+  #@show(TruncError)
 
   return(newCld, newTBl, newTAl, newClu, w1)
 

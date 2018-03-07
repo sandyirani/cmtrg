@@ -45,11 +45,11 @@ Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
 
 function mainLoop()
     (A,B) = initializeAB()
-    numIter = 1
+    numIter = 100
     tau = .2
     updateEnvironment(A,B)
     for iter = 1:numIter
-        iter%100 == 0 && (tau = 0.2*100/iter)
+        iter%10 == 0 && (tau = 0.2/iter)
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
         println("\n iteration = $iter")
         #energies[swp] = sweepFast(m)/N
@@ -61,6 +61,10 @@ function mainLoop()
         updateEnvironment(A,B)
         (A,B) = applyGateAndUpdate(taugate, DOWN, A, B)
         updateEnvironment(A,B)
+        if (iter%10 ==0)
+          energy = calcEnergy(A,B)
+          @show(energy)
+        end
     end
 end
 

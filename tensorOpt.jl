@@ -42,7 +42,7 @@ function applyGateAndUpdate(g, dir, A, B)
     delta = (oldCostB - newCostB)/abs(oldCostB)
     change = max(change, abs(delta))
     InverseErrorB = sum(abs.(inv(R)*R-eye(D^4*pd)))
-    if (InvsereErrorB > .01)
+    if (InverseErrorB > .01)
       @show(InverseErrorB)
     end
 
@@ -234,7 +234,7 @@ end
 
 function stablizeR(R)
     R = 0.5*(R+R')
-    return(R)
+    #return(R)
     r = size(R)
     n = r[1]
     d1 = Int8(round(n/2))
@@ -251,7 +251,7 @@ function stablizeR(R)
     eVecs = zeros(n,n)
     eVecs[:,1:d1] = evn1[2][:,1:d1]
     eVecs[:,d1+1:n] = evn2[2][:,1:n-d1]
-    testStabilize = sum(abs.(eVecs*diagm(evs)*eVecs'-R))
-    @show(testStabilize)
+    #testStabilize = sum(abs.(eVecs*diagm(evs)*eVecs'-R))
+    #@show(testStabilize)
     return(eVecs*diagm(evsNonNeg)*eVecs')
 end
