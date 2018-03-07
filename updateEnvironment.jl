@@ -1,6 +1,6 @@
 function updateEnvironment(A,B)
 
-  EPS = .001
+  EPS = .01
   change = 1
 
   Adub = [zeros(D^2,D^2,D^2,D^2) for i=1:4]
@@ -10,42 +10,44 @@ function updateEnvironment(A,B)
     (Adub[dir], Bdub[dir]) = (doubleTensor(A2),doubleTensor(B2))
   end
 
-  while(change > EPS)
+  numUpdate = 10
+
+  for j = 1:numUpdate
     oldVec = getVec(C[4], Ta[4], Tb[4], C[1])
     (C[4], Tb[4], Ta[4], C[1]) = genericUpdate(Ta[3],C[4],Ta[4],Tb[4],C[1],Tb[1],Adub[RIGHT],Bdub[RIGHT])
     (C[4], Ta[4], Tb[4], C[1]) = genericUpdate(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
     newVec = getVec(C[4], Ta[4], Tb[4], C[1])
-    change = getNormDist(oldVec, newVec)
-    @show("Left")
-    @show(getNormDist(oldVec, newVec))
+    leftChange = getNormDist(oldVec, newVec)
+    @show(leftChange)
+  end
 
+  for j = 1:numUpdate
     oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
     (C[2], Tb[2], Ta[2], C[3]) = genericUpdate(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],Adub[LEFT],Bdub[LEFT])
     (C[2], Ta[2], Tb[2], C[3]) = genericUpdate(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
     newVec = getVec(C[2],Ta[2],Tb[2],C[3])
-    change = max(change, getNormDist(oldVec, newVec))
-    @show("Right")
-    @show(getNormDist(oldVec, newVec))
+    rightChange = getNormDist(oldVec, newVec)
+    @show(rightChange)
   end
 
-  change = 1
-  while(change > EPS)
+  for j = 1:numUpdate
     oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
     (C[1], Ta[1], Tb[1], C[2]) = genericUpdate(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
     (C[1], Tb[1], Ta[1], C[2]) = genericUpdate(Ta[4],C[1],Ta[1],Tb[1],C[2],Tb[2],Bdub[UP],Adub[UP])
     newVec = getVec(C[1],Tb[1],Ta[1],C[2])
-    change = getNormDist(oldVec, newVec)
-    @show("Top")
-    @show(getNormDist(oldVec, newVec))
+    upChange = getNormDist(oldVec, newVec)
+    @show(upChange)
+  end
 
+  for j = 1:numUpdate
     oldVec = getVec(C[3],Tb[3],Ta[3],C[4])
     (C[3], Ta[3], Tb[3], C[4]) = genericUpdate(Tb[2],C[3],Tb[3],Ta[3],C[4],Ta[4],Adub[DOWN],Bdub[DOWN])
     (C[3], Tb[3], Ta[3], C[4]) = genericUpdate(Ta[2],C[3],Ta[3],Tb[3],C[4],Tb[4],Bdub[DOWN],Adub[DOWN])
     newVec = getVec(C[3],Tb[3],Ta[3],C[4])
-    change = max(change, getNormDist(oldVec, newVec))
-    @show("Bottom")
-    @show(getNormDist(oldVec, newVec))
+    downChange = getNormDist(oldVec, newVec)
+    @show(downChange)
   end
+
 
 end
 
@@ -109,6 +111,7 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   evn = eigs(MW;nev=X,ritzvec=true)
   W = evn[2][:,1:X]
 
+
   newClu = renormalize(Z'*Clu1)
   newCld = renormalize(Cld1*Z)
   newTBl = reshape(Z'*reshape(TBl1,XD2,X*D^4),XD2,XD2)
@@ -118,11 +121,10 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
 
   w1 = getVecBig(Cld1,TBl1,TAl1,Clu1)
   w2 = getVec(newCld, newTBl, newTAl, newClu)
-  @show("Truncation error")
-  dist = getNormDist(w1,w2)
-  @show(dist)
+  TruncError = getNormDist(w1,w2)
+  @show(TruncError)
 
-  return(newCld, newTBl, newTAl, newClu)
+  return(newCld, newTBl, newTAl, newClu, w1)
 
 end
 

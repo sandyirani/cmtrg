@@ -15,43 +15,42 @@ function applyGateAndUpdate(g, dir, A, B)
   setEnv(A2, B2, dir)
   oldCostA = 1
   oldCostB = 1
+  maxIter = 20
+  count = 0
 
-  while( change > eps )
+  while( change > eps && count < maxIter)
+    count += 1
     R = makeR(B2,true)
     R = stablizeR(R)
     S = makeS(B2,A2p,B2p,true)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
-    #@show(sum(abs.(A2)))
     newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA
     delta = (oldCostA - newCostA)/abs(oldCostA)
-    #@show(newCostA)
-    #@show(delta)
     change = abs(delta)
     InverseErrorA = sum(abs.(inv(R)*R-eye(D^4*pd)))
-    @show(InverseErrorA)
+    if (InverseErrorA > .01)
+      @show(InverseErrorA)
+    end
 
     R = makeR(A2,false)
     R = stablizeR(R)
-    #@show(cond(R))
     S = makeS(A2,A2p,B2p,false)
-    vecB = reshape(B2,D^4*pd)
-    costB = vecB'*R*vecB - vecB'*S - S'*vecB
-    ContractionError = (newCostA - costB)/abs(costB)
-    @show(ContractionError)
     newVecB = getNewAB(R,S)
     B2 = reshape(newVecB,D,D,D,D,pd)
-    #@show(sum(abs.(B2)))
     newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
     delta = (oldCostB - newCostB)/abs(oldCostB)
-    #@show(newCostB)
-    #@show(delta)
     change = max(change, abs(delta))
     InverseErrorB = sum(abs.(inv(R)*R-eye(D^4*pd)))
-    @show(InverseErrorB)
+    if (InvsereErrorB > .01)
+      @show(InverseErrorB)
+    end
+
     oldCostA = newCostA
     oldCostB = newCostB
   end
+  numberOfIterationsOptAB = count
+  @show(numberOfIterationsOptAB)
 
   A2 = renormalize(A2)
   B2 = renormalize(B2)
@@ -255,13 +254,4 @@ function stablizeR(R)
     testStabilize = sum(abs.(eVecs*diagm(evs)*eVecs'-R))
     @show(testStabilize)
     return(eVecs*diagm(evsNonNeg)*eVecs')
-end
-
-function getLogNormMatrix(M)
-    m = size(M)
-    numM = sum(m)
-    sumM = sum(abs.(M))
-    aveM = sumM/numM
-    renorm = log(10,aveM)
-    return(Int64(round(renorm)))
 end

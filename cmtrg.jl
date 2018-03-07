@@ -5,6 +5,7 @@ using LinearMaps
 
 include("tensorOpt.jl")
 include("updateEnvironment.jl")
+include("tests.jl")
 
 X = 20
 D = 3
@@ -40,18 +41,11 @@ sm = sp'
 Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
 # order for Htwosite is s1, s2, s1p, s2p
 
-function testLoop()
-  (A,B) = initializeAB()
-  tau = .2
-  updateEnvironment(A,B)
-  taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
-  (A,B) = applyGateAndUpdate(taugate, RIGHT, A, B)
-  #updateEnvironment(A,B)
-end
+
 
 function mainLoop()
     (A,B) = initializeAB()
-    numIter = 1000
+    numIter = 1
     tau = .2
     updateEnvironment(A,B)
     for iter = 1:numIter
@@ -59,9 +53,7 @@ function mainLoop()
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
         println("\n iteration = $iter")
         #energies[swp] = sweepFast(m)/N
-        @show("apply gate right")
         (A,B) = applyGateAndUpdate(taugate, RIGHT, A, B)
-        @show("update environment")
         updateEnvironment(A,B)
         (A,B) = applyGateAndUpdate(taugate, LEFT, A, B)
         updateEnvironment(A,B)
