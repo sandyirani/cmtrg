@@ -6,6 +6,7 @@ using LinearMaps
 include("tensorOpt.jl")
 include("updateEnvironment.jl")
 include("tests.jl")
+include("energy.jl")
 
 X = 20
 D = 3
@@ -48,6 +49,8 @@ function mainLoop()
     numIter = 100
     tau = .2
     updateEnvironment(A,B)
+    energy = calcEnergy(A,B)
+    @show(energy)
     for iter = 1:numIter
         iter%10 == 0 && (tau = 0.2/iter)
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
@@ -55,16 +58,26 @@ function mainLoop()
         #energies[swp] = sweepFast(m)/N
         (A,B) = applyGateAndUpdate(taugate, RIGHT, A, B)
         updateEnvironment(A,B)
+        energy = calcEnergy(A,B)
+        @show(energy)
         (A,B) = applyGateAndUpdate(taugate, LEFT, A, B)
         updateEnvironment(A,B)
+        energy = calcEnergy(A,B)
+        @show(energy)
         (A,B) = applyGateAndUpdate(taugate, UP, A, B)
         updateEnvironment(A,B)
+        energy = calcEnergy(A,B)
+        @show(energy)
         (A,B) = applyGateAndUpdate(taugate, DOWN, A, B)
         updateEnvironment(A,B)
+        energy = calcEnergy(A,B)
+        @show(energy)
+        #=
         if (iter%10 ==0)
           energy = calcEnergy(A,B)
           @show(energy)
         end
+        =#
     end
 end
 
