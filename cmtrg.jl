@@ -15,9 +15,10 @@ XD2 = X*D*D
 X2D2 = X*X*D*D
 
 
-C = [eye(X) for i=1:4]
-Ta = [zeros(X, D, D, X) for i=1:4]
-Tb = [zeros(X, D, D, X) for i=1:4]
+#C = [eye(X) for i=1:4]
+C = [((rand(X,X)-0.5*ones(X,X))/50 + eye(X)) for i=1:4]
+Ta = [((rand(X, D, D, X)-.5*ones(X, D, D, X))/50) for i=1:4]
+Tb = [((rand(X, D, D, X)-.5*ones(X, D, D, X))/50) for i=1:4]
 for k = 1:4
     for i = 1:X
         for j = 1:D
