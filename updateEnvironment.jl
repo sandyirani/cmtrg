@@ -199,6 +199,15 @@ end
 function renormalize(T)
   t = size(T)
   aveT = sum(abs.(T))/sum(t)
-  T = T/(aveT*sqrt(sum(t)))
+  #T = T/(aveT*sum(t))
+  T = T/aveT
+  return(T)
+end
+
+function renormalizeSqrt(T)
+  t = size(T)
+  aveT = sum(abs.(T))/sum(t)
+  #T = T/(aveT*sqrt(sum(t)))
+  T = T/aveT
   return(T)
 end

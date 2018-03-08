@@ -11,12 +11,14 @@ function calcEnergy(A,B)
     S = makeS(B2,A2p,B2p,true)
     vecA = reshape(A2,D^4*pd)
     energy += vecA'*S
+    @show(energy)
   end
 
   R = makeR(B,true)
   R = 0.5(R + R')
   vecA = reshape(A,D^4*pd)
   norm = vecA'*R*vecA
+  @show(norm)
 
   return(energy/(norm*2))
 

@@ -54,8 +54,8 @@ function applyGateAndUpdate(g, dir, A, B)
   numberOfIterationsOptAB = count
   @show(numberOfIterationsOptAB)
 
-  A2 = renormalize(A2)
-  B2 = renormalize(B2)
+  A2 = renormalizeSqrt(A2)
+  B2 = renormalizeSqrt(B2)
   return(rotateTensorsBack(A2,B2,dir))
 end
 
