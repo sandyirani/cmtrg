@@ -13,23 +13,7 @@ function updateEnvironment(A,B)
   numUpdate = 10
   change = 0
 
-  for j = 1:numUpdate
-    oldVec = getVec(C[4], Ta[4], Tb[4], C[1])
-    (C[4], Tb[4], Ta[4], C[1]) = genericUpdate2(Ta[3],C[4],Ta[4],Tb[4],C[1],Tb[1],Adub[RIGHT],Bdub[RIGHT])
-    (C[4], Ta[4], Tb[4], C[1]) = genericUpdate2(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
-    newVec = getVec(C[4], Ta[4], Tb[4], C[1])
-    change = getNormDist(oldVec, newVec)
-  end
-  @show(change)
 
-  for j = 1:numUpdate
-    oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
-    (C[2], Tb[2], Ta[2], C[3]) = genericUpdate2(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],Adub[LEFT],Bdub[LEFT])
-    (C[2], Ta[2], Tb[2], C[3]) = genericUpdate2(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
-    newVec = getVec(C[2],Ta[2],Tb[2],C[3])
-    change = getNormDist(oldVec, newVec)
-  end
-  @show(change)
 
   for j = 1:numUpdate
     oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
@@ -45,6 +29,24 @@ function updateEnvironment(A,B)
     (C[3], Ta[3], Tb[3], C[4]) = genericUpdate2(Tb[2],C[3],Tb[3],Ta[3],C[4],Ta[4],Adub[DOWN],Bdub[DOWN])
     (C[3], Tb[3], Ta[3], C[4]) = genericUpdate2(Ta[2],C[3],Ta[3],Tb[3],C[4],Tb[4],Bdub[DOWN],Adub[DOWN])
     newVec = getVec(C[3],Tb[3],Ta[3],C[4])
+    change = getNormDist(oldVec, newVec)
+  end
+  @show(change)
+
+  for j = 1:numUpdate
+    oldVec = getVec(C[4], Ta[4], Tb[4], C[1])
+    (C[4], Tb[4], Ta[4], C[1]) = genericUpdate2(Ta[3],C[4],Ta[4],Tb[4],C[1],Tb[1],Adub[RIGHT],Bdub[RIGHT])
+    (C[4], Ta[4], Tb[4], C[1]) = genericUpdate2(Tb[3],C[4],Tb[4],Ta[4],C[1],Ta[1],Bdub[RIGHT],Adub[RIGHT])
+    newVec = getVec(C[4], Ta[4], Tb[4], C[1])
+    change = getNormDist(oldVec, newVec)
+  end
+  @show(change)
+
+  for j = 1:numUpdate
+    oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
+    (C[2], Tb[2], Ta[2], C[3]) = genericUpdate2(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],Adub[LEFT],Bdub[LEFT])
+    (C[2], Ta[2], Tb[2], C[3]) = genericUpdate2(Tb[1],C[2],Tb[2],Ta[2],C[3],Ta[3],Bdub[LEFT],Adub[LEFT])
+    newVec = getVec(C[2],Ta[2],Tb[2],C[3])
     change = getNormDist(oldVec, newVec)
   end
   @show(change)
@@ -205,9 +207,9 @@ function renormalize(T)
 end
 
 function renormalizeSqrt(T)
-  t = size(T)
-  aveT = sum(abs.(T))/sum(t)
-  #T = T/(aveT*sqrt(sum(t)))
-  T = T/aveT
+  t = prod(size(T))
+  Tvec = reshape(T,t)
+  norm = sqrt(Tvec'*Tvec)
+  T = T/norm
   return(T)
 end

@@ -61,6 +61,30 @@ function getRealEnvUpdate()
     end
 end
 
+function testNorm(A,B)
+    Aconj = conj.(A)
+    Bconj = conj.(B)
+    @tensor begin
+        top[a,b,c,d,e,f,s1,s2] := A[a,x,e,f,s1]*B[b,c,d,x,s2]
+        bottom[ap,bp,cp,dp,ep,fp,s1p,s2p] := Aconj[ap,xp,ep,fp,s1p]*Bconj[bp,cp,dp,xp,s2p]
+        tb[a,b,c,d,e,f,ap,bp,cp,dp,ep,fp] := top[a,b,c,d,e,f,s1,s2]*bottom[ap,bp,cp,dp,ep,fp,s1,s2]
+    end
+    s = size(tb)
+    dim = s[1]*s[2]*s[3]*s[4]*s[5]*s[6]
+    @show(trace(reshape(tb,dim,dim)))
+end
+
+function testNorm(A)
+    Aconj = conj.(A)
+    @tensor begin
+        tb[a,b,c,d,ap,bp,cp,dp] := A[a,b,c,d,s]*Aconj[ap,bp,cp,dp,s]
+    end
+    s = size(tb)
+    dim = s[1]*s[2]*s[3]*s[4]
+    @show(trace(reshape(tb,dim,dim)))
+end
+
+
 function makeTransferMatrix(A,B)
     @show("Making transfer matrix")
     Tb3 = reshape(Tb[3],X,D^2,X)

@@ -56,29 +56,12 @@ function mainLoop()
         iter%10 == 0 && (tau = 0.2/iter)
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
         println("\n iteration = $iter")
-        #energies[swp] = sweepFast(m)/N
-        (A,B) = applyGateAndUpdate(taugate, RIGHT, A, B)
-        updateEnvironment(A,B)
-        energy = calcEnergy(A,B)
-        @show(energy)
-        (A,B) = applyGateAndUpdate(taugate, LEFT, A, B)
-        updateEnvironment(A,B)
-        energy = calcEnergy(A,B)
-        @show(energy)
-        (A,B) = applyGateAndUpdate(taugate, UP, A, B)
-        updateEnvironment(A,B)
-        energy = calcEnergy(A,B)
-        @show(energy)
-        (A,B) = applyGateAndUpdate(taugate, DOWN, A, B)
-        updateEnvironment(A,B)
-        energy = calcEnergy(A,B)
-        @show(energy)
-        #=
-        if (iter%10 ==0)
-          energy = calcEnergy(A,B)
-          @show(energy)
+        for dir = 2:2
+            (A,B) = applyGateAndUpdate(taugate, dir, A, B)
+            updateEnvironment(A,B)
+            energy = calcEnergy(A,B)
+            @show(energy)
         end
-        =#
     end
 end
 
