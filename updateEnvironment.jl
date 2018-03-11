@@ -12,7 +12,7 @@ function updateEnvironment(A,B)
 
   numUpdate = 10
   change = 0
-
+  newVec = zeros(X^2*D^4)
 
 
   for j = 1:numUpdate
@@ -22,6 +22,7 @@ function updateEnvironment(A,B)
     newVec = getVec(C[1],Tb[1],Ta[1],C[2])
     change = getNormDist(oldVec, newVec)
   end
+  @show(newVec'*newVec)
   @show(change)
 
   for j = 1:numUpdate
@@ -31,6 +32,7 @@ function updateEnvironment(A,B)
     newVec = getVec(C[3],Tb[3],Ta[3],C[4])
     change = getNormDist(oldVec, newVec)
   end
+  @show(newVec'*newVec)
   @show(change)
 
   for j = 1:numUpdate
@@ -40,6 +42,7 @@ function updateEnvironment(A,B)
     newVec = getVec(C[4], Ta[4], Tb[4], C[1])
     change = getNormDist(oldVec, newVec)
   end
+  @show(newVec'*newVec)
   @show(change)
 
   for j = 1:numUpdate
@@ -49,6 +52,7 @@ function updateEnvironment(A,B)
     newVec = getVec(C[2],Ta[2],Tb[2],C[3])
     change = getNormDist(oldVec, newVec)
   end
+  @show(newVec'*newVec)
   @show(change)
 
 
@@ -120,8 +124,8 @@ function genericUpdate2(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
 
 
 
-  w2 = getVec(newCld, newTBl, newTAl, newClu)
-  TruncError = getNormDist(w1,w2)
+  #w2 = getVec(newCld, newTBl, newTAl, newClu)
+  #TruncError = getNormDist(w1,w2)
   #@show(TruncError)
 
   return(newCld, newTBl, newTAl, newClu)
