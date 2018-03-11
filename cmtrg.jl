@@ -56,7 +56,7 @@ function mainLoop()
         iter%10 == 0 && (tau = 0.2/iter)
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
         println("\n iteration = $iter")
-        for dir = 1:4
+        for dir = 1:1
             (A,B) = applyGateAndUpdate(taugate, dir, A, B)
             updateEnvironment(A,B)
             energy = calcEnergy(A,B)

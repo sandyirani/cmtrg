@@ -2,7 +2,7 @@ function calcEnergy(A,B)
 
   energy = 0
 
-  for dir = 1:4
+  for dir = 1:1
     (A2, B2) = rotateTensors(A,B,dir)
     (A2p, B2p) = applyGate(A2, B2, Htwosite)
     setEnv(A2, B2, dir)
@@ -16,10 +16,12 @@ function calcEnergy(A,B)
 
   setEnv(A, B, RIGHT)
   R = makeR(B,true)
-  R = 0.5(R + R')
+  #R = 0.5*(R + R')
   vecA = reshape(A,D^4*pd)
   norm = vecA'*R*vecA
   @show(norm)
+  @show(vecA'*vecA)
+  @show(trace(R))
 
   return(energy/(norm*2))
 
