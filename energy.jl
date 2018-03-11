@@ -2,7 +2,7 @@ function calcEnergy(A,B)
 
   energy = 0
 
-  for dir = 1:1
+  for dir = 1:4
     (A2, B2) = rotateTensors(A,B,dir)
     (A2p, B2p) = applyGate(A2, B2, Htwosite)
     setEnv(A2, B2, dir)
