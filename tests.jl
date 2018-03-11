@@ -84,6 +84,40 @@ function testNorm(A)
     @show(trace(reshape(tb,dim,dim)))
 end
 
+function testConverge()
+    n = X^2*D^4
+    M = rand(n,n)
+    v = rand(n)
+    vOld = v
+    numT = 100
+    for j = 1:numT
+        vOld = v
+        v = (v'*M)'
+        v = v/sqrt(v'*v)
+        @show(getNormDist(v,vOld))
+    end
+end
+
+
+function testTransfer(M)
+
+    #M = makeTransferMatrix(A,B)
+    #M = rand(X^2*D^4,X^2*D^4)
+    #v = getVec(C[3],Tb[3],Ta[3],C[4])
+    M = M*1000000
+    v = rand(size(M)[1])
+    vOld = v
+    numT = 100
+    for j = 1:numT
+        vOld = v
+        v = (v'*M)'
+        @show(sqrt(v'*v))
+        v = v/sqrt(v'*v)
+        v = (v'*M)'
+        v = v/sqrt(v'*v)
+        @show(getNormDist(v,vOld))
+    end
+end
 
 function makeTransferMatrix(A,B)
     @show("Making transfer matrix")

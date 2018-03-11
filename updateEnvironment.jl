@@ -55,7 +55,6 @@ function updateEnvironment(A,B)
   @show(newVec'*newVec)
   @show(change)
 
-
 end
 
 function getVec(C1,Ta,Tb,C2)
