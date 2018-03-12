@@ -29,7 +29,7 @@ function applyGateAndUpdate(g, dir, A, B)
     delta = (oldCostA - newCostA)/abs(oldCostA)
     change = abs(delta)
 
-    InverseErrorA = sum(abs.(R*newVecA-S))
+    InverseErrorA = sum(abs.(R*newVecA-S))/sum(abs.(S))
     if (InverseErrorA > .01)
       @show(InverseErrorA)
     end
