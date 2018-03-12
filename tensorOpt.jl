@@ -45,7 +45,7 @@ function applyGateAndUpdate(g, dir, A, B)
     change = max(change, abs(delta))
     InverseErrorB = sum(abs.(R*newVecB-S))
     if (InverseErrorB > .01)
-      #@show(InverseErrorB)
+      @show(InverseErrorB)
     end
 
     oldCostA = newCostA
@@ -56,8 +56,8 @@ function applyGateAndUpdate(g, dir, A, B)
 
   A2 = renormalizeSqrt(A2)
   B2 = renormalizeSqrt(B2)
-  testNorm(A2,B2)
-  testNorm(A2)
+  #testNorm(A2,B2)
+  #testNorm(A2)
   return(rotateTensorsBack(A2,B2,dir))
 end
 
