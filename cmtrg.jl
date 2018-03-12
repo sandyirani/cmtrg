@@ -8,7 +8,7 @@ include("updateEnvironment.jl")
 include("tests.jl")
 include("energy.jl")
 
-X = 20
+X = 10
 D = 3
 pd = 2
 XD2 = X*D*D
@@ -22,11 +22,12 @@ Tb = [((rand(X, D, D, X)-.5*ones(X, D, D, X))/50) for i=1:4]
 for k = 1:4
     for i = 1:X
         for j = 1:D
-            Ta[k][i,j,j,i] = 1
-            Tb[k][i,j,j,i] = 1
+            Ta[k][i,j,j,i] = rand()
+            Tb[k][i,j,j,i] = rand()
         end
     end
 end
+
 E = [zeros(X, D, D, X) for i=1:6]
 E[5] = zeros(X, D, D, XD2)
 E[6] = zeros(XD2, D, D, X)
@@ -47,7 +48,7 @@ Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
 
 function mainLoop()
     (A,B) = initializeAB()
-    numIter = 2
+    numIter = 100
     tau = .2
     updateEnvironment(A,B)
     energy = calcEnergy(A,B)
@@ -57,13 +58,13 @@ function mainLoop()
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
         println("\n iteration = $iter")
         for dir = 1:4
+            (A,B) = renormalizeAll(A,B)
             (A,B) = applyGateAndUpdate(taugate, dir, A, B)
             updateEnvironment(A,B)
             energy = calcEnergy(A,B)
             @show(energy)
         end
     end
-    return(A,B)
 end
 
 function initializeAB()

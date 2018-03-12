@@ -45,14 +45,14 @@ function applyGateAndUpdate(g, dir, A, B)
     change = max(change, abs(delta))
     InverseErrorB = sum(abs.(R*newVecB-S))
     if (InverseErrorB > .01)
-      @show(InverseErrorB)
+      #@show(InverseErrorB)
     end
 
     oldCostA = newCostA
     oldCostB = newCostB
   end
   numberOfIterationsOptAB = count
-  @show(numberOfIterationsOptAB)
+  #@show(numberOfIterationsOptAB)
 
   A2 = renormalizeSqrt(A2)
   B2 = renormalizeSqrt(B2)

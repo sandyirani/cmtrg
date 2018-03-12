@@ -56,7 +56,7 @@ function getRealEnvUpdate()
     for j = 1:5
         newVec = (testVec'*T)'
         changeM = getNormDist(testVec, newVec)
-        @show(changeM)
+        #@show(changeM)
         testVec = newVec
     end
 end
@@ -71,7 +71,7 @@ function testNorm(A,B)
     end
     s = size(tb)
     dim = s[1]*s[2]*s[3]*s[4]*s[5]*s[6]
-    @show(trace(reshape(tb,dim,dim)))
+    #@show(trace(reshape(tb,dim,dim)))
 end
 
 function testNorm(A)
@@ -81,7 +81,25 @@ function testNorm(A)
     end
     s = size(tb)
     dim = s[1]*s[2]*s[3]*s[4]
-    @show(trace(reshape(tb,dim,dim)))
+    #@show(trace(reshape(tb,dim,dim)))
+end
+
+function calcNormAlt(A,B)
+
+  vLeft = getVec(C[4],Ta[4],Tb[4],C[1])
+  M = makeTransferMatrix(A,B)
+  vRight = getVecRight(C[3],Tb[2],Ta[2],C[2])
+  #@show(vLeft'*vLeft)
+  #@show(vRight'*vRight)
+  testNorm(A,B)
+  n = length(vLeft)
+  vLeftRand = rand(n)
+  vLeftRand = vLeftRand/(vLeftRand'*vLeftRand)*(vLeft'*vLeft)
+  vRightRand = rand(n)
+  vRightRand = vRightRand/(vRightRand'*vRightRand)*(vRight'*vRight)
+  @show(vLeftRand'*M*vRightRand)
+  return(vLeft'*M*vRight)
+
 end
 
 function testConverge()
@@ -94,7 +112,7 @@ function testConverge()
         vOld = v
         v = (v'*M)'
         v = v/sqrt(v'*v)
-        @show(getNormDist(v,vOld))
+        #@show(getNormDist(v,vOld))
     end
 end
 
@@ -135,6 +153,45 @@ function makeTransferMatrix(A,B)
         T4[z,d2,d4,w,x,b1,b3,u] := T3[z,d2,d4,x,b1,b3,a3,a4]*Tu[w,a4,a3,u]
     end
     T = reshape(T4,X^2*D^4,X^2*D^4)
+    return(T)
+    @show("Done with transfer matrix")
+end
+
+function makeTransferMatrixMid(A,B)
+    @show("Making transfer matrix")
+    Aconj = conj.(A)
+    Bconj = conj.(B)
+    @tensor begin
+      Atop[d,dp,c,cp,b,bp] := A[a,b,c,d,s]*Aconj[a,bp,cp,dp,s]
+      Btop[d,dp,c,cp,b,bp] := B[a,b,c,d,s]*Bconj[a,bp,cp,dp,s]
+      Abot[d,dp,a,ap,b,bp] := A[a,b,c,d,s]*Aconj[ap,bp,c,dp,s]
+      Bbot[d,dp,a,ap,b,bp] := B[a,b,c,d,s]*Bconj[ap,bp,c,dp,s]
+    end
+    Atop = reshape(Atop,D^4,D^2)
+    Btop = reshape(Btop,D^2,D^4)
+    Top = reshape(Atop*Btop,D^2,D^2,D^2,D^2)
+    Abot = reshape(Abot,D^4,D^2)
+    Bbot = reshape(Bbot,D^2,D^4)
+    Bot = reshape(Abot*Bbot,D^2,D^2,D^2,D^2)
+    @tensor begin
+      T[a1,a,d1,d] := Top[a,b,c,d]*Bot[a1,b,c,d1]
+    end
+    @show("Done with transfer matrix")
+    return(reshape(T,D^4,D^4))
+end
+
+function makeTransferMatrixSides()
+    @show("Making transfer matrix")
+    Tb3 = reshape(Tb[3],X,D^2,X)
+    Ta3 = reshape(Ta[3],X,D^2,X)
+    Tb1 = reshape(Tb[1],X,D^2,X)
+    Ta1 = reshape(Ta[1],X,D^2,X)
+    @tensor begin
+        Td[x,c1,c2,z]:= Tb3[x,c1,y]*Ta3[y,c2,z]
+        Tu[w,c2,c1,u] := Tb1[w,c2,y]*Ta1[y,c1,u]
+        T4[z,w,x,u] := Td[x,c1,c2,z]*Tu[w,c2,c1,u]
+    end
+    T = reshape(T4,X^2,X^2)
     return(T)
     @show("Done with transfer matrix")
 end

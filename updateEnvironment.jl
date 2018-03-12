@@ -22,8 +22,8 @@ function updateEnvironment(A,B)
     newVec = getVec(C[1],Tb[1],Ta[1],C[2])
     change = getNormDist(oldVec, newVec)
   end
-  @show(newVec'*newVec)
-  @show(change)
+  #@show(newVec'*newVec)
+  #@show(change)
 
   for j = 1:numUpdate
     oldVec = getVec(C[3],Tb[3],Ta[3],C[4])
@@ -32,8 +32,9 @@ function updateEnvironment(A,B)
     newVec = getVec(C[3],Tb[3],Ta[3],C[4])
     change = getNormDist(oldVec, newVec)
   end
-  @show(newVec'*newVec)
-  @show(change)
+  #@show(newVec'*newVec)
+  #@show(change)
+
 
   for j = 1:numUpdate
     oldVec = getVec(C[4], Ta[4], Tb[4], C[1])
@@ -42,8 +43,8 @@ function updateEnvironment(A,B)
     newVec = getVec(C[4], Ta[4], Tb[4], C[1])
     change = getNormDist(oldVec, newVec)
   end
-  @show(newVec'*newVec)
-  @show(change)
+  #@show(newVec'*newVec)
+  #@show(change)
 
   for j = 1:numUpdate
     oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
@@ -52,8 +53,8 @@ function updateEnvironment(A,B)
     newVec = getVec(C[2],Ta[2],Tb[2],C[3])
     change = getNormDist(oldVec, newVec)
   end
-  @show(newVec'*newVec)
-  @show(change)
+  #@show(newVec'*newVec)
+  #@show(change)
 
 end
 
@@ -62,6 +63,15 @@ function getVec(C1,Ta,Tb,C2)
   M = reshape(M,XD2,X)*reshape(Tb,X,XD2)
   M = reshape(M,X*D^4,X)*C2
   return(reshape(M,X^2*D^4))
+end
+
+function getVecRight(C3,Tb,Ta,C2)
+  v = getVec(C2,Ta,Tb,C3)
+  v = reshape(v,X,D^2,D^2,X)
+  @tensor begin
+    v2[d,c,b,a] := v[a,b,c,d]
+  end
+  return(reshape(v2,D^4*X^2))
 end
 
 function getVecBig(C1,Ta,Tb,C2)
@@ -114,12 +124,12 @@ function genericUpdate2(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   #@show(getNormDist(w0,w1))
 
   (U,d,V,err) = dosvdtrunc(reshape(w1,X,X*D^4),X)
-  newCld = renormalize(U*diagm(d))
+  newCld = renormalizeSqrt(U*diagm(d))
   (U,d,V,err) = dosvdtrunc(reshape(V',XD2,XD2),X)
-  newTBl = renormalize(reshape(U*diagm(d),X,D,D,X))
+  newTBl = renormalizeSqrt(reshape(U*diagm(d),X,D,D,X))
   (U,d,V,err) = dosvdtrunc(reshape(V',XD2,X),X)
-  newTAl = renormalize(reshape(U*diagm(d),X,D,D,X))
-  newClu = renormalize(V')
+  newTAl = renormalizeSqrt(reshape(U*diagm(d),X,D,D,X))
+  newClu = renormalizeSqrt(V')
 
 
 
