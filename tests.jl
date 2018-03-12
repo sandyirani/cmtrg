@@ -91,13 +91,12 @@ function calcNormAlt(A,B)
   vRight = getVecRight(C[3],Tb[2],Ta[2],C[2])
   #@show(vLeft'*vLeft)
   #@show(vRight'*vRight)
-  testNorm(A,B)
-  n = length(vLeft)
-  vLeftRand = rand(n)
-  vLeftRand = vLeftRand/(vLeftRand'*vLeftRand)*(vLeft'*vLeft)
-  vRightRand = rand(n)
-  vRightRand = vRightRand/(vRightRand'*vRightRand)*(vRight'*vRight)
-  @show(vLeftRand'*M*vRightRand)
+  #n = length(vLeft)
+  #vLeftRand = rand(n)
+  #vLeftRand = vLeftRand/(vLeftRand'*vLeftRand)*(vLeft'*vLeft)
+  #vRightRand = rand(n)
+  #vRightRand = vRightRand/(vRightRand'*vRightRand)*(vRight'*vRight)
+  #@show(vLeftRand'*M*vRightRand)
   return(vLeft'*M*vRight)
 
 end
@@ -138,7 +137,7 @@ function testTransfer(M)
 end
 
 function makeTransferMatrix(A,B)
-    @show("Making transfer matrix")
+    #@show("Making transfer matrix")
     Tb3 = reshape(Tb[3],X,D^2,X)
     Ta3 = reshape(Ta[3],X,D^2,X)
     Tb1 = reshape(Tb[1],X,D^2,X)
@@ -154,7 +153,7 @@ function makeTransferMatrix(A,B)
     end
     T = reshape(T4,X^2*D^4,X^2*D^4)
     return(T)
-    @show("Done with transfer matrix")
+    #@show("Done with transfer matrix")
 end
 
 function makeTransferMatrixMid(A,B)
