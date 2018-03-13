@@ -8,7 +8,7 @@ include("updateEnvironment.jl")
 include("tests.jl")
 include("energy.jl")
 
-X = 10
+X = 20
 D = 3
 pd = 2
 XD2 = X*D*D
@@ -59,10 +59,12 @@ function mainLoop()
         println("\n iteration = $iter")
         for dir = 1:1
             (A,B) = applyGateAndUpdate(taugate, dir, A, B)
+            #(A,B) = applyGateSU(A,B,taugate)
             updateEnvironment(A,B)
         end
         energy = calcEnergy(A,B)
         @show(energy)
+        @show(calcEnergyNoEnv(A,B))
     end
 end
 

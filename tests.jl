@@ -71,7 +71,19 @@ function testNorm(A,B)
     end
     s = size(tb)
     dim = s[1]*s[2]*s[3]*s[4]*s[5]*s[6]
-    #@show(trace(reshape(tb,dim,dim)))
+    return(trace(reshape(tb,dim,dim)))
+end
+
+function testNorm(A,B,g)
+    (Ap,Bp) = applyGate(conj.(A),conj.(B),g)
+    @tensor begin
+        top[a,b,c,d,e,f,s1,s2] := A[a,x,e,f,s1]*B[b,c,d,x,s2]
+        bottom[ap,bp,cp,dp,ep,fp,s1p,s2p] := Ap[ap,xp,ep,fp,s1p]*Bp[bp,cp,dp,xp,s2p]
+        tb[a,b,c,d,e,f,ap,bp,cp,dp,ep,fp] := top[a,b,c,d,e,f,s1,s2]*bottom[ap,bp,cp,dp,ep,fp,s1,s2]
+    end
+    s = size(tb)
+    dim = s[1]*s[2]*s[3]*s[4]*s[5]*s[6]
+    return(trace(reshape(tb,dim,dim)))
 end
 
 function testNorm(A)
