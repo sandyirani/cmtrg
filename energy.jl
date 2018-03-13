@@ -7,7 +7,7 @@ function calcEnergy(A,B)
   #R = 0.5*(R + R')
   vecA = reshape(A,D^4*pd)
   norm = vecA'*R*vecA
-  #(A,B) = renormalizeAll(A,B,norm)
+  (A,B) = renormalizeAll(A,B,norm)
 
   for dir = 1:1
     (A2, B2) = rotateTensors(A,B,dir)
@@ -18,6 +18,15 @@ function calcEnergy(A,B)
     energy += vecA'*S
   end
 
+  #return(energy/(norm*2))
+  return(energy/2)
+
+end
+
+function calcEnergyNoEnv(A,B)
+
+  norm = testNorm(A,B)
+  energy = testNorm(A,B,Htwosite)
   return(energy/(norm*2))
 
 end

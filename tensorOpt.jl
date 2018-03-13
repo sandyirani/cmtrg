@@ -26,7 +26,9 @@ function applyGateAndUpdate(g, dir, A, B)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
     newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA
-    delta = (oldCostA - newCostA)/abs(oldCostA)
+    #delta = (oldCostA - newCostA)/abs(oldCostA)
+    delta = (oldCostA - newCostA)/abs(newVecA'*R*newVecA)
+    @show(delta)
     change = abs(delta)
 
     InverseErrorA = sum(abs.(R*newVecA-S))/sum(abs.(S))
@@ -41,7 +43,9 @@ function applyGateAndUpdate(g, dir, A, B)
     newVecB = getNewAB(R,S)
     B2 = reshape(newVecB,D,D,D,D,pd)
     newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
-    delta = (oldCostB - newCostB)/abs(oldCostB)
+    #delta = (oldCostB - newCostB)/abs(oldCostB)
+    delta = (oldCostB - newCostB)/abs(newVecB'*R*newVecB)
+    @show(delta)
     change = max(change, abs(delta))
     InverseErrorB = sum(abs.(R*newVecB-S))
     if (InverseErrorB > .01)
@@ -52,7 +56,7 @@ function applyGateAndUpdate(g, dir, A, B)
     oldCostB = newCostB
   end
   numberOfIterationsOptAB = count
-  #@show(numberOfIterationsOptAB)
+  @show(numberOfIterationsOptAB)
 
   A2 = renormalizeSqrt(A2)
   B2 = renormalizeSqrt(B2)

@@ -23,7 +23,7 @@ function updateEnvironment(A,B)
     change = getNormDist(oldVec, newVec)
   end
   #@show(newVec'*newVec)
-  #@show(change)
+  @show(change)
 
   for j = 1:numUpdate
     oldVec = getVec(C[3],Tb[3],Ta[3],C[4])
@@ -33,7 +33,7 @@ function updateEnvironment(A,B)
     change = getNormDist(oldVec, newVec)
   end
   #@show(newVec'*newVec)
-  #@show(change)
+  @show(change)
 
 
   for j = 1:numUpdate
@@ -44,7 +44,7 @@ function updateEnvironment(A,B)
     change = getNormDist(oldVec, newVec)
   end
   #@show(newVec'*newVec)
-  #@show(change)
+  @show(change)
 
   for j = 1:numUpdate
     oldVec = getVec(C[2],Ta[2],Tb[2],C[3])
@@ -54,7 +54,7 @@ function updateEnvironment(A,B)
     change = getNormDist(oldVec, newVec)
   end
   #@show(newVec'*newVec)
-  #@show(change)
+  @show(change)
 
 end
 
