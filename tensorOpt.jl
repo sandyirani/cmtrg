@@ -13,6 +13,17 @@ function applyGateAndUpdate(g, dir, A, B)
   (A2, B2) = rotateTensors(A,B,dir)
   (A2p, B2p) = applyGate(A2, B2, g)
   setEnv(A2, B2, dir)
+
+  @show(calcEnergy(A2,B2))
+  @show(calcEnergy(A2p,B2p))
+
+  #For testing
+  R = makeR(B2p,true)
+  vecA2p = reshape(A2p,prod(size(A2p)))
+  normABp = abs(vecA2p'*R*vecA2p)
+  @show(normABp)
+
+
   oldCostA = 1
   oldCostB = 1
   maxIter = 20
@@ -25,25 +36,29 @@ function applyGateAndUpdate(g, dir, A, B)
     S = makeS(B2,A2p,B2p,true)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
-    newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA
-    delta = (oldCostA - newCostA)/abs(oldCostA)
+    newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA + normABp
+    @show(newCostA/normABp)
+    delta = (oldCostA - newCostA)/normABp
     change = abs(delta)
 
-    InverseErrorA = sum(abs.(R*newVecA-S))/sum(abs.(S))
+    InverseErrorA = (R*newVecA-S)'*(R*newVecA-S)/(S'*S)
+    @show(InverseErrorA)
     if (InverseErrorA > .01)
       @show(InverseErrorA)
     end
-
 
     R = makeR(A2,false)
     R = stablizeR(R)
     S = makeS(A2,A2p,B2p,false)
     newVecB = getNewAB(R,S)
     B2 = reshape(newVecB,D,D,D,D,pd)
-    newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
-    delta = (oldCostB - newCostB)/abs(oldCostB)
+    newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB + normABp
+    @show(newCostB/normABp)
+    delta = (oldCostB - newCostB)/normABp
     change = max(change, abs(delta))
+
     InverseErrorB = sum(abs.(R*newVecB-S))
+      @show(InverseErrorB)
     if (InverseErrorB > .01)
       @show(InverseErrorB)
     end
@@ -53,6 +68,8 @@ function applyGateAndUpdate(g, dir, A, B)
   end
   numberOfIterationsOptAB = count
   #@show(numberOfIterationsOptAB)
+
+  @show(calcEnergy(A2,B2))
 
   A2 = renormalizeSqrt(A2)
   B2 = renormalizeSqrt(B2)
@@ -144,13 +161,16 @@ function makeR(AB, right)
   if right
     Temp = mergeRight(AB, conj.(AB))
     R = makeD4Matrix(Temp, E[6], E[1], E[2])
-    R = [R[b,c,d,a,bp,cp,dp,ap] for a=1:D,b=1:D,c=1:D,d=1:D,ap=1:D,bp=1:D,cp=1:D,dp=1:D]
+    s = size(R)
+    R = [R[b,c,d,a,bp,cp,dp,ap] for a=1:s[4],b=1:s[1],c=1:s[2],d=1:s[3],ap=1:s[8],bp=1:s[5],cp=1:s[6],dp=1:s[7]]
   else
     Temp = mergeLeft(AB, conj.(AB))
     R = makeD4Matrix(E[5], Temp, E[3], E[4])
     R = [R[c,d,a,b,cp,dp,ap,bp] for a=1:D,b=1:D,c=1:D,d=1:D,ap=1:D,bp=1:D,cp=1:D,dp=1:D]
   end
-  return(JK(reshape(R,D^4,D^4),eye(2)))
+  r = size(R)
+  dim = r[1]*r[2]*r[3]*r[4]
+  return(JK(reshape(R,dim,dim),eye(2)))
 
 end
 
@@ -159,9 +179,9 @@ function makeS(AB, AP, BP, right)
     Temp = mergeRight(AB, BP)
     S = makeD4Matrix(Temp, E[6], E[1], E[2])
     s = size(S)
-    S = [S[b,c,d,a,bp,cp,dp,ap] for a=1:D,b=1:D,c=1:D,d=1:D,ap=1:D,bp=1:s[5],cp=1:D,dp=1:D]
-    S = reshape(S,D^4,D^3*s[5])
-    S = reshape(S * reshape(AP,D^3*s[5],pd), D^4*pd) # D8 g d
+    S = [S[b,c,d,a,bp,cp,dp,ap] for a=1:s[4],b=1:s[1],c=1:s[2],d=1:s[3],ap=1:s[8],bp=1:s[5],cp=1:s[6],dp=1:s[7]]
+    S = reshape(S,prod(s[1:4]),prod(s[5:8]))
+    S = reshape(S * reshape(AP,prod(s[5:8]),pd), prod(s[1:4])*pd) # D8 g d
   else
     Temp = mergeLeft(AB, AP)
     S = makeD4Matrix(E[5], Temp, E[3], E[4])

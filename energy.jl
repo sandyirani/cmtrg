@@ -2,19 +2,22 @@ function calcEnergy(A,B)
 
   energy = 0
 
-  setEnv(A, B, RIGHT)
+  #Undo
+  #setEnv(A, B, RIGHT)
   R = makeR(B,true)
   #R = 0.5*(R + R')
-  vecA = reshape(A,D^4*pd)
+  a = size(A)
+  vecA = reshape(A,prod(a))
   norm = vecA'*R*vecA
   #(A,B) = renormalizeAll(A,B,norm)
 
   for dir = 1:1
     (A2, B2) = rotateTensors(A,B,dir)
     (A2p, B2p) = applyGate(A2, B2, Htwosite)
-    setEnv(A2, B2, dir)
+    #Undo
+    #setEnv(A2, B2, dir)
     S = makeS(B2,A2p,B2p,true)
-    vecA = reshape(A2,D^4*pd)
+    vecA = reshape(A2,prod(size(A2)))
     energy += vecA'*S
   end
 
