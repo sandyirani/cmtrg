@@ -38,11 +38,14 @@ function applyGateAndUpdate(g, dir, A, B)
     A2 = reshape(newVecA,D,D,D,D,pd)
     newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA + normABp
     @show(newCostA/normABp)
+    @show((newVecA'*S + S'*newVecA)/normABp)
+    @show(newVecA'*R*newVecA/normABp)
+    @show("\n")
     delta = (oldCostA - newCostA)/normABp
     change = abs(delta)
 
     InverseErrorA = (R*newVecA-S)'*(R*newVecA-S)/(S'*S)
-    @show(InverseErrorA)
+    #@show(InverseErrorA)
     if (InverseErrorA > .01)
       @show(InverseErrorA)
     end

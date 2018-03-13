@@ -124,12 +124,12 @@ function genericUpdate2(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   #@show(getNormDist(w0,w1))
 
   (U,d,V,err) = dosvdtrunc(reshape(w1,X,X*D^4),X)
-  newCld = renormalizeSqrt(U*diagm(d))
+  newCld = renormalize(U*diagm(d))
   (U,d,V,err) = dosvdtrunc(reshape(V',XD2,XD2),X)
-  newTBl = renormalizeSqrt(reshape(U*diagm(d),X,D,D,X))
+  newTBl = renormalize(reshape(U*diagm(d),X,D,D,X))
   (U,d,V,err) = dosvdtrunc(reshape(V',XD2,X),X)
-  newTAl = renormalizeSqrt(reshape(U*diagm(d),X,D,D,X))
-  newClu = renormalizeSqrt(V')
+  newTAl = renormalize(reshape(U*diagm(d),X,D,D,X))
+  newClu = renormalize(V')
 
 
 
@@ -213,7 +213,7 @@ end
 
 function renormalize(T)
   t = size(T)
-  aveT = sum(abs.(T))/sum(t)
+  aveT = sum(abs.(T))/prod(t)
   #T = T/(aveT*sum(t))
   T = T/aveT
   return(T)
