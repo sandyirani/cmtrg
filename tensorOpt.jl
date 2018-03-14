@@ -36,19 +36,12 @@ function applyGateAndUpdate(g, dir, A, B)
     S = makeS(B2,A2p,B2p,true)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
-<<<<<<< HEAD
     newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA + normABp
     @show(newCostA/normABp)
     @show((newVecA'*S + S'*newVecA)/normABp)
     @show(newVecA'*R*newVecA/normABp)
     @show("\n")
     delta = (oldCostA - newCostA)/normABp
-=======
-    newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA
-    #delta = (oldCostA - newCostA)/abs(oldCostA)
-    delta = (oldCostA - newCostA)/abs(newVecA'*R*newVecA)
-    @show(delta)
->>>>>>> 6a97e6d4dcfaf811b58ee8732acc12092f7f6988
     change = abs(delta)
 
     InverseErrorA = (R*newVecA-S)'*(R*newVecA-S)/(S'*S)
@@ -62,16 +55,10 @@ function applyGateAndUpdate(g, dir, A, B)
     S = makeS(A2,A2p,B2p,false)
     newVecB = getNewAB(R,S)
     B2 = reshape(newVecB,D,D,D,D,pd)
-<<<<<<< HEAD
-    newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB + normABp
-    @show(newCostB/normABp)
-    delta = (oldCostB - newCostB)/normABp
-=======
     newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
     #delta = (oldCostB - newCostB)/abs(oldCostB)
     delta = (oldCostB - newCostB)/abs(newVecB'*R*newVecB)
     @show(delta)
->>>>>>> 6a97e6d4dcfaf811b58ee8732acc12092f7f6988
     change = max(change, abs(delta))
 
     InverseErrorB = sum(abs.(R*newVecB-S))
