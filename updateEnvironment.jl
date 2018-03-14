@@ -195,7 +195,7 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   #@show(TruncError)
 
   return(newCld, newTBl, newTAl, newClu, w1)
-
+ 
 end
 
 
