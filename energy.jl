@@ -20,7 +20,7 @@ function calcEnergy(A,B)
     vecA = reshape(A2,prod(size(A2)))
     energy += vecA'*S
   end
-
+ 
   #return(energy/(norm*2))
   return(energy/2)
 
