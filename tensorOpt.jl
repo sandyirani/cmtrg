@@ -45,7 +45,7 @@ function applyGateAndUpdate(g, dir, A, B)
     change = abs(delta)
 
     InverseErrorA = (R*newVecA-S)'*(R*newVecA-S)/(S'*S)
-    #@show(InverseErrorA)
+    @show(InverseErrorA)
     if (InverseErrorA > .01)
       @show(InverseErrorA)
     end
@@ -62,7 +62,7 @@ function applyGateAndUpdate(g, dir, A, B)
     change = max(change, abs(delta))
 
     InverseErrorB = sum(abs.(R*newVecB-S))
-      @show(InverseErrorB)
+      #@show(InverseErrorB)
     if (InverseErrorB > .01)
       @show(InverseErrorB)
     end

@@ -195,7 +195,7 @@ function genericUpdate(TAd, Cld, TAl, TBl, Clu, TBu, Adub, Bdub)
   #@show(TruncError)
 
   return(newCld, newTBl, newTAl, newClu, w1)
- 
+
 end
 
 
@@ -213,9 +213,9 @@ end
 
 function renormalize(T)
   t = size(T)
-  aveT = sum(abs.(T))/prod(t)
+  #aveT = sum(abs.(T))/(prod(t)^2)
   #T = T/(aveT*sum(t))
-  T = T/aveT
+  T = T/sum(abs.(T))
   return(T)
 end
 

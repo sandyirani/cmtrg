@@ -51,8 +51,8 @@ function mainLoop()
     numIter = 100
     tau = .2
     updateEnvironment(A,B)
-    energy = calcEnergy(A,B)
-    @show(energy)
+    #energy = calcEnergy(A,B)
+    #@show(energy)
     for iter = 1:numIter
         iter%10 == 0 && (tau = 0.2/iter)
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
