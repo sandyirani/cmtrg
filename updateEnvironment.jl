@@ -14,7 +14,7 @@ function updateEnvironment(A,B)
   change = 0
   newVec = zeros(X^2*D^4)
 
-
+#=
   for j = 1:numUpdate
     oldVec = getVec(C[1],Tb[1],Ta[1],C[2])
     (C[1], Ta[1], Tb[1], C[2]) = genericUpdate2(Tb[4],C[1],Tb[1],Ta[1],C[2],Ta[2],Adub[UP],Bdub[UP])
@@ -34,6 +34,7 @@ function updateEnvironment(A,B)
   end
   #@show(newVec'*newVec)
   @show(change)
+  =#
 
 
   for j = 1:numUpdate
@@ -55,6 +56,25 @@ function updateEnvironment(A,B)
   end
   #@show(newVec'*newVec)
   @show(change)
+
+  symmetrizeEnv()
+
+end
+
+function symmetrizeEnv()
+
+    for a = 1:4
+        for i = 1:X
+            for l = 1:X
+                for k = 1:D
+                    for j = k+1:D
+                        Ta[a][i,j,k,l] = 0.5(Ta[a][i,j,k,l]' + Ta[a][i,k,j,l])
+                        Tb[a][i,j,k,l] = 0.5(Tb[a][i,j,k,l]' + Tb[a][i,k,j,l])
+                    end
+                end
+            end
+        end
+    end
 
 end
 

@@ -15,10 +15,13 @@ XD2 = X*D*D
 X2D2 = X*X*D*D
 
 
-#C = [eye(X) for i=1:4]
+
+
 C = [((rand(X,X)-0.5*ones(X,X))/50 + eye(X)) for i=1:4]
-Ta = [((rand(X, D, D, X)-.5*ones(X, D, D, X))/50) for i=1:4]
-Tb = [((rand(X, D, D, X)-.5*ones(X, D, D, X))/50) for i=1:4]
+#Ta = [((rand(X, D, D, X)-.5*ones(X, D, D, X))/50) for i=1:4]
+#Tb = [((rand(X, D, D, X)-.5*ones(X, D, D, X))/50) for i=1:4]
+Ta = [zeros(X, D, D, X) for i=1:4]
+Tb = [zeros(X, D, D, X) for i=1:4]
 for k = 1:4
     for i = 1:X
         for j = 1:D
@@ -27,6 +30,21 @@ for k = 1:4
         end
     end
 end
+
+
+#=
+C = [eye(X) for i=1:4]
+Ta = [zeros(X, D, D, X) for i=1:4]
+Tb = [zeros(X, D, D, X) for i=1:4]
+for k = 1:4
+    for i = 1:X
+        for j = 1:D
+            Ta[k][i,j,j,i] = 1
+            Tb[k][i,j,j,i] = 1
+        end
+    end
+end
+=#
 
 E = [zeros(X, D, D, X) for i=1:6]
 E[5] = zeros(X, D, D, XD2)
@@ -39,9 +57,12 @@ DOWN = 4
 
 #Global variables
 sz = Float64[0.5 0; 0 -0.5]
+sx = Float64[0 0.5; 0.5 0]
 sp = Float64[0 1; 0 0]
 sm = sp'
-Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
+#Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
+lambda = 3.0
+Htwosite = reshape(4.0 * JK(sz,sz) + lambda * JK(eye(2),sx) + lambda * JK(sx,eye(2))
 # order for Htwosite is s1, s2, s1p, s2p
 
 
@@ -57,15 +78,17 @@ function mainLoop()
         #iter%10 == 0 && (tau = 0.2/iter)
         taugate = reshape(expm(-tau * reshape(Htwosite,4,4)),2,2,2,2)
         println("\n iteration = $iter")
-        for dir = 1:1
+        for dir = 1:4
             (A,B) = applyGateAndUpdate(taugate, dir, A, B)
             #(A,B) = applyGateSU(A,B,taugate)
-            #updateEnvironment(A,B)
+            updateEnvironment(A,B)
         end
         #if (iter%10 == 0)
-            energy = calcEnergy(A,B)
-            @show(energy)
-            @show(calcEnergyNoEnv(A,B))
+            #energy = calcEnergy(A,B)
+            #@show(energy)
+            #@show(calcEnergyNoEnv(A,B))
+            m = calcM(A,B)
+            @show(m)
         #end
     end
 end
@@ -94,6 +117,7 @@ function initializeAB()
     B[1,1,1,1,2] = 1
     taugate = reshape(expm(-.2 * reshape(Htwosite,4,4)),2,2,2,2)
     count = 0
+    numInits = 20
     while (count < 4)
         count = 0
         for j = 1:4
@@ -103,6 +127,13 @@ function initializeAB()
             (A, B) = rotateTensors(A,B,UP)
         end
     end
+    for k = 1:numInits
+        for j = 1:2
+            (A,B) = applyGateSU(A,B,taugate)
+            (A, B) = rotateTensors(A,B,UP)
+        end
+    end
+
     return(A,B)
 end
 

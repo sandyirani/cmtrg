@@ -9,9 +9,8 @@ function calcEnergy(A,B)
   a = size(A)
   vecA = reshape(A,prod(a))
   norm = vecA'*R*vecA
-  (A,B) = renormalizeAll(A,B,norm)
 
-  for dir = 1:1
+  for dir = 1:2
     (A2, B2) = rotateTensors(A,B,dir)
     (A2p, B2p) = applyGate(A2, B2, Htwosite)
     #Undo
@@ -21,8 +20,35 @@ function calcEnergy(A,B)
     energy += vecA'*S
   end
 
-  #return(energy/(norm*2))
-  return(energy/2)
+  #(A,B) = renormalizeAll(A,B,norm)
+
+  return(energy/(norm*2))
+
+end
+
+function calcM(A,B)
+
+  energy = 0
+
+
+  R = makeR(B,true)
+  a = size(A)
+  vecA = reshape(A,prod(a))
+  norm = vecA'*R*vecA
+
+  for dir = 1:2
+    (A2, B2) = rotateTensors(A,B,dir)
+    (A2p, B2p) = applyGate(A2, B2, Htwosite)
+    #Undo
+    #setEnv(A2, B2, dir)
+    S = makeS(B2,A2p,B2p,true)
+    vecA = reshape(A2,prod(size(A2)))
+    energy += vecA'*S
+  end
+
+  #(A,B) = renormalizeAll(A,B,norm)
+
+  return(energy/(norm*2))
 
 end
 
@@ -39,6 +65,7 @@ function renormalizeAll(A,B,norm)
    for j = 1:4
      normFac = sqrt(normFac)
    end
+   @show(norm)
    @show(normFac)
    A = A/sqrt(normFac)
    B = B/sqrt(normFac)

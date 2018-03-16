@@ -7,12 +7,12 @@ end
 
 
 function applyGateAndUpdate(g, dir, A, B)
-  eps = .00001
+  eps = .0001
   change = 2*eps
 
   (A2, B2) = rotateTensors(A,B,dir)
   (A2p, B2p) = applyGate(A2, B2, g)
-  setEnv2(A2, B2, dir)
+  setEnv(A2, B2, dir)
 
   #@show(calcEnergy(A2,B2))
   #@show(calcEnergy(A2p,B2p))
@@ -21,12 +21,12 @@ function applyGateAndUpdate(g, dir, A, B)
   R = makeR(B2p,true)
   vecA2p = reshape(A2p,prod(size(A2p)))
   normABp = abs(vecA2p'*R*vecA2p)
-  #@show(normABp)
+  @show(normABp)
 
 
   oldCostA = 1
   oldCostB = 1
-  maxIter = 20
+  maxIter = 50
   count = 0
 
   while( change > eps && count < maxIter)
@@ -37,7 +37,9 @@ function applyGateAndUpdate(g, dir, A, B)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
     newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA + normABp
-    #@show(newCostA/normABp)
+
+
+    @show(newCostA/normABp)
     #@show((newVecA'*S + S'*newVecA)/normABp)
     #@show(newVecA'*R*newVecA/normABp)
     #@show("\n")
@@ -55,7 +57,9 @@ function applyGateAndUpdate(g, dir, A, B)
     S = makeS(A2,A2p,B2p,false)
     newVecB = getNewAB(R,S)
     B2 = reshape(newVecB,D,D,D,D,pd)
-    newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
+    newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB + normABp
+
+    @show(newCostB/normABp)
     #delta = (oldCostB - newCostB)/abs(oldCostB)
     delta = (oldCostB - newCostB)/abs(newVecB'*R*newVecB)
     #@show(delta)
@@ -71,7 +75,7 @@ function applyGateAndUpdate(g, dir, A, B)
     oldCostB = newCostB
   end
   numberOfIterationsOptAB = count
-  #@show(numberOfIterationsOptAB)
+  @show(numberOfIterationsOptAB)
 
   #@show(calcEnergy(A2,B2))
 
@@ -278,10 +282,10 @@ end
 
 function stablizeR(R)
     R = 0.5*(R+R')
-    return(R)
+    #return(R)
     r = size(R)
     n = r[1]
-    d1 = Int8(round(n/2))
+    d1 = Int64(round(n/2))
     evn1 = eigs(R;nev=d1,which=:LR,ritzvec=true)
     evn2 = eigs(R;nev=n-d1,which=:SR,ritzvec=true)
     if (length(evn1[1])+length(evn2[1]) < n)
@@ -292,10 +296,13 @@ function stablizeR(R)
     evs[1:d1] = evn1[1][1:d1]
     evs[d1+1:n] = evn2[1][1:n-d1]
     evsNonNeg = [max(0,evs[j]) for j=1:n]
+    @show(sum(abs.(evs-evsNonNeg))/sum(abs.(evs)))
     eVecs = zeros(n,n)
     eVecs[:,1:d1] = evn1[2][:,1:d1]
     eVecs[:,d1+1:n] = evn2[2][:,1:n-d1]
-    #testStabilize = sum(abs.(eVecs*diagm(evs)*eVecs'-R))
-    #@show(testStabilize)
+    newR = eVecs*diagm(evsNonNeg)*eVecs'
+    v = rand(n)
+    testStabilize = real(v'*(R-newR)*v)/real(v'*R*v)
+    @show(testStabilize)
     return(eVecs*diagm(evsNonNeg)*eVecs')
 end
