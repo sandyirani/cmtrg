@@ -12,16 +12,16 @@ function applyGateAndUpdate(g, dir, A, B)
 
   (A2, B2) = rotateTensors(A,B,dir)
   (A2p, B2p) = applyGate(A2, B2, g)
-  setEnv(A2, B2, dir)
+  setEnv2(A2, B2, dir)
 
-  @show(calcEnergy(A2,B2))
-  @show(calcEnergy(A2p,B2p))
+  #@show(calcEnergy(A2,B2))
+  #@show(calcEnergy(A2p,B2p))
 
   #For testing
   R = makeR(B2p,true)
   vecA2p = reshape(A2p,prod(size(A2p)))
   normABp = abs(vecA2p'*R*vecA2p)
-  @show(normABp)
+  #@show(normABp)
 
 
   oldCostA = 1
@@ -37,15 +37,15 @@ function applyGateAndUpdate(g, dir, A, B)
     newVecA = getNewAB(R,S)
     A2 = reshape(newVecA,D,D,D,D,pd)
     newCostA = newVecA'*R*newVecA - newVecA'*S - S'*newVecA + normABp
-    @show(newCostA/normABp)
-    @show((newVecA'*S + S'*newVecA)/normABp)
-    @show(newVecA'*R*newVecA/normABp)
-    @show("\n")
+    #@show(newCostA/normABp)
+    #@show((newVecA'*S + S'*newVecA)/normABp)
+    #@show(newVecA'*R*newVecA/normABp)
+    #@show("\n")
     delta = (oldCostA - newCostA)/normABp
     change = abs(delta)
 
     InverseErrorA = (R*newVecA-S)'*(R*newVecA-S)/(S'*S)
-    @show(InverseErrorA)
+    #@show(InverseErrorA)
     if (InverseErrorA > .01)
       @show(InverseErrorA)
     end
@@ -58,7 +58,7 @@ function applyGateAndUpdate(g, dir, A, B)
     newCostB = newVecB'*R*newVecB - newVecB'*S - S'*newVecB
     #delta = (oldCostB - newCostB)/abs(oldCostB)
     delta = (oldCostB - newCostB)/abs(newVecB'*R*newVecB)
-    @show(delta)
+    #@show(delta)
     change = max(change, abs(delta))
 
     InverseErrorB = sum(abs.(R*newVecB-S))
@@ -71,9 +71,9 @@ function applyGateAndUpdate(g, dir, A, B)
     oldCostB = newCostB
   end
   numberOfIterationsOptAB = count
-  @show(numberOfIterationsOptAB)
+  #@show(numberOfIterationsOptAB)
 
-  @show(calcEnergy(A2,B2))
+  #@show(calcEnergy(A2,B2))
 
   A2 = renormalizeSqrt(A2)
   B2 = renormalizeSqrt(B2)
@@ -130,6 +130,21 @@ function setEnv(A2,B2,dir)
     E[3] = reshape(reshape(Tb[4],XD2,X)*C[1], X, D, D, X)
     E[4] = Tb[1]
     makeLowerEs(Ta[1],C[2],Ta[2],Tb[2],C[3],Tb[3],B2,A2)
+  end
+
+end
+
+function setEnv2(A2,B2,dir)
+
+  for i = 1:6
+      E[i] = zeros(X,D,D,X)
+      for j = 1:X
+          for k = 1:D
+              for l = 1:X
+                  E[i][j,k,k,l] = 1
+              end
+          end
+      end
   end
 
 end
