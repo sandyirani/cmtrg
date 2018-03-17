@@ -30,25 +30,23 @@ function calcM(A,B)
 
   energy = 0
 
+  setEnv(A, B, dir)
 
   R = makeR(B,true)
   a = size(A)
+  aHalf = Int64(ceil(a/2))
+  sigZbig = JK(eye(aHalf),sigZ)
   vecA = reshape(A,prod(a))
-  norm = vecA'*R*vecA
+  m1 = vecA'*R*sigZbig*vecA
 
-  for dir = 1:2
-    (A2, B2) = rotateTensors(A,B,dir)
-    (A2p, B2p) = applyGate(A2, B2, Htwosite)
-    #Undo
-    #setEnv(A2, B2, dir)
-    S = makeS(B2,A2p,B2p,true)
-    vecA = reshape(A2,prod(size(A2)))
-    energy += vecA'*S
-  end
+  R = makeR(A,false)
+  b = size(B)
+  bHalf = Int64(ceil(b/2))
+  sigZbig = JK(eye(bHalf),sigZ)
+  vecB = reshape(B,prod(b))
+  m2 = vecB'*R*sigZbig*vecB
 
-  #(A,B) = renormalizeAll(A,B,norm)
-
-  return(energy/(norm*2))
+  return((m1+m2)/2)
 
 end
 

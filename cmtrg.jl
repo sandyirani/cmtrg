@@ -57,12 +57,13 @@ DOWN = 4
 
 #Global variables
 sz = Float64[0.5 0; 0 -0.5]
-sx = Float64[0 0.5; 0.5 0]
 sp = Float64[0 1; 0 0]
 sm = sp'
 #Htwosite = reshape(JK(sz,sz) + 0.5 * JK(sp,sm) + 0.5 * JK(sm,sp),2,2,2,2)
 lambda = 3.0
-Htwosite = reshape(4.0 * JK(sz,sz) + lambda * JK(eye(2),sx) + lambda * JK(sx,eye(2))
+sigZ = Float64[1 0; 0 -1]
+sigX = Float64[0 1; 1 0]
+Htwosite = reshape(JK(sigZ,sigZ) + lambda*0.25*JK(eye(2),sigX) + lambda*0.25*JK(sigX,eye(2))
 # order for Htwosite is s1, s2, s1p, s2p
 
 
